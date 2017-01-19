@@ -1,0 +1,19 @@
+language: go
+
+go:
+  - 1.7.x
+
+# this is necessary for fork builds to work
+go_import_path: github.com/runabove/noderig
+
+before_install:
+  - go get github.com/Masterminds/glide
+  - go get github.com/alecthomas/gometalinter
+
+before_script:
+  gometalinter --install --update
+
+script:
+  - glide install
+  - make lint
+  - make

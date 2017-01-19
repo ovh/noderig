@@ -1,0 +1,7 @@
+cpu: 1
+mem: 1
+load: 1
+disk: 1
+net: 1
+flushPath: /tmp/noderig
+listen: none
