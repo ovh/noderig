@@ -27,15 +27,11 @@ func NewMemory(period uint, level uint8) *Memory {
 		return c
 	}
 
-	ticker := time.NewTicker(time.Duration(period) * time.Millisecond)
-
+	tick := time.Tick(time.Duration(period) * time.Millisecond)
 	go func() {
-		for {
-			select {
-			case <-ticker.C:
-				if err := c.scrape(); err != nil {
-					log.Error(err)
-				}
+		for range tick {
+			if err := c.scrape(); err != nil {
+				log.Error(err)
 			}
 		}
 	}()
