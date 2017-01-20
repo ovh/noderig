@@ -3,6 +3,8 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path"
+	"strconv"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
@@ -29,6 +31,8 @@ func init() {
 	RootCmd.Flags().Uint8("disk", 1, "disk metrics level")
 	RootCmd.Flags().Uint8("net", 1, "network metrics level")
 	RootCmd.Flags().Uint64("period", 1000, "default collection period")
+	RootCmd.Flags().StringP("collectors", "c", "./collectors", "external collectors directory")
+	RootCmd.Flags().Uint64P("keep-for", "k", 3, "keep collectors data for the given number of fetch")
 
 	viper.BindPFlags(RootCmd.Flags())
 }
@@ -96,6 +100,49 @@ var RootCmd = &cobra.Command{
 		disk := collectors.NewDisk(uint(viper.GetInt("period")), uint8(viper.GetInt("disk")))
 		cs = append(cs, disk)
 
+		// Load external collectors
+		cpath := viper.GetString("collectors")
+		cdir, err := os.Open(cpath)
+		if err == nil {
+			idirs, err := cdir.Readdir(0)
+			if err != nil {
+				log.Error(err)
+				return
+			}
+			for _, idir := range idirs {
+				idirname := idir.Name()
+				i, err := strconv.Atoi(idirname)
+				if err != nil {
+					if idirname != "etc" && idirname != "lib" {
+						log.Warn("Bad collector folder: ", idirname)
+					}
+					continue
+				}
+
+				interval := i * 1000
+				if i <= 0 {
+					interval = viper.GetInt("period")
+				}
+
+				dir, err := os.Open(path.Join(cpath, idirname))
+				if err != nil {
+					log.Error(err)
+					continue
+				}
+
+				files, err := dir.Readdir(0)
+				if err != nil {
+					log.Error(err)
+					continue
+				}
+
+				for _, file := range files {
+					disk := collectors.NewCollector(path.Join(dir.Name(), file.Name()), uint(interval), uint(viper.GetInt("keep-for")))
+					cs = append(cs, disk)
+				}
+			}
+		}
+
 		log.Infof("Noderig started - %v", len(cs))
 
 		// Setup http
@@ -113,6 +160,7 @@ var RootCmd = &cobra.Command{
 	             <p><a href="https://github.com/runabove/noderig">Github</a></p>
 	             </body>
 	             </html>`))
+
 		})
 		log.Info("Http started")
 
