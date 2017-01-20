@@ -137,7 +137,7 @@ func (c *CPU) scrape() error {
 		}
 
 		for i, v := range systems {
-			gts := fmt.Sprintf("%v.systems{chore:%v} %v\n", class, i, v*100)
+			gts := fmt.Sprintf("%v.systems{chore=%v} %v\n", class, i, v*100)
 			c.sensision.WriteString(gts)
 		}
 	}
