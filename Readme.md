@@ -138,8 +138,9 @@ net: 1  # Network collector level (Optional, default: 1)
 Noderig can be customized through some parameters.
 
 ```yaml
-period: 1000 # Duration within all the sources should be scraped    (Optional, default: 1000)
-listen: none # Listen address, set to none to disable http endpoint (Optional, default: 127.0.0.1:9100)
+period: 1000             # Duration within all the sources should be scraped    (Optional, default: 1000)
+listen: none             # Listen address, set to none to disable http endpoint (Optional, default: 127.0.0.1:9100)
+collectors: /opt/noderig # Custom collectors directory                          (Optional, default: none)
 ```
 
 ## Sample metrics
