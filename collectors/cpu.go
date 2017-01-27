@@ -123,12 +123,12 @@ func (c *CPU) scrape() error {
 
 	if c.level == 3 {
 		for i, v := range iowaits {
-			gts := fmt.Sprintf("%v.iowait{chore:%v} %v\n", class, i, v*100)
+			gts := fmt.Sprintf("%v.iowait{chore=%v} %v\n", class, i, v*100)
 			c.sensision.WriteString(gts)
 		}
 
 		for i, v := range users {
-			gts := fmt.Sprintf("%v.user{chore:%v} %v\n", class, i, v*100)
+			gts := fmt.Sprintf("%v.user{chore=%v} %v\n", class, i, v*100)
 			c.sensision.WriteString(gts)
 		}
 
