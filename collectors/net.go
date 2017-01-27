@@ -3,6 +3,7 @@ package collectors
 import (
 	"bytes"
 	"fmt"
+	"reflect"
 	"sync"
 	"time"
 
@@ -29,10 +30,13 @@ func NewNet(period uint, level uint8, opts interface{}) *Net {
 	if opts != nil {
 		options = opts.(map[string]interface{})
 		if val, ok := options["interfaces"]; ok {
-			ifs := val.([]interface{})
-			for _, v := range ifs {
-				ifaces = append(ifaces, v.(string))
+			if reflect.TypeOf(val).Kind() == reflect.Slice {
+				ifs := val.([]interface{})
+				for _, v := range ifs {
+					ifaces = append(ifaces, v.(string))
+				}
 			}
+
 		}
 
 	}
