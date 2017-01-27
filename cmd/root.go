@@ -7,10 +7,11 @@ import (
 	"strconv"
 	"time"
 
+	"net/http"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"net/http"
 
 	"github.com/runabove/noderig/collectors"
 	"github.com/runabove/noderig/core"
@@ -94,7 +95,7 @@ var RootCmd = &cobra.Command{
 		load := collectors.NewLoad(uint(viper.GetInt("period")), uint8(viper.GetInt("load")))
 		cs = append(cs, load)
 
-		net := collectors.NewNet(uint(viper.GetInt("period")), uint8(viper.GetInt("net")))
+		net := collectors.NewNet(uint(viper.GetInt("period")), uint8(viper.GetInt("net")), viper.Get("net-opts"))
 		cs = append(cs, net)
 
 		disk := collectors.NewDisk(uint(viper.GetInt("period")), uint8(viper.GetInt("disk")))
