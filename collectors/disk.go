@@ -3,7 +3,6 @@ package collectors
 import (
 	"bytes"
 	"fmt"
-	"strings"
 	"sync"
 	"time"
 
@@ -99,22 +98,21 @@ func (c *Disk) scrape() error {
 			gts = fmt.Sprintf("%v.total{disk=%v} %v\n", now, path, usage.Total)
 			c.sensision.WriteString(gts)
 
-			if c.level > 2 {
-				for name, stats := range counters {
-					if strings.HasSuffix(path, name) {
-						gts = fmt.Sprintf("%v.bytes.read{disk=%v} %v\n", now, path, (stats.ReadBytes - c.counters[name].ReadBytes) / uint64(c.period/1000))
-						c.sensision.WriteString(gts)
-						gts = fmt.Sprintf("%v.bytes.write{disk=%v} %v\n", now, path, (stats.WriteBytes - c.counters[name].WriteBytes) / uint64(c.period/1000))
-						c.sensision.WriteString(gts)
+		}
+	}
 
-						if c.level > 3 {
-							gts = fmt.Sprintf("%v.io.read{disk=%v} %v\n", now, path, (stats.ReadCount - c.counters[name].ReadCount) / uint64(c.period/1000))
-							c.sensision.WriteString(gts)
-							gts = fmt.Sprintf("%v.io.write{disk=%v} %v\n", now, path, (stats.WriteCount - c.counters[name].WriteCount) / uint64(c.period/1000))
-							c.sensision.WriteString(gts)
-						}
-					}
-				}
+	if c.level > 2 {
+		for name, stats := range counters {
+			gts := fmt.Sprintf("%v.bytes.read{name=%v} %v\n", now, name, (stats.ReadBytes - c.counters[name].ReadBytes) / uint64(c.period/1000))
+			c.sensision.WriteString(gts)
+			gts = fmt.Sprintf("%v.bytes.write{name=%v} %v\n", now, name, (stats.WriteBytes - c.counters[name].WriteBytes) / uint64(c.period/1000))
+			c.sensision.WriteString(gts)
+
+			if c.level > 3 {
+				gts = fmt.Sprintf("%v.io.read{name=%v} %v\n", now, name, (stats.ReadCount - c.counters[name].ReadCount) / uint64(c.period/1000))
+				c.sensision.WriteString(gts)
+				gts = fmt.Sprintf("%v.io.write{name=%v} %v\n", now, name, (stats.WriteCount - c.counters[name].WriteCount) / uint64(c.period/1000))
+				c.sensision.WriteString(gts)
 			}
 		}
 	}
