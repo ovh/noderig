@@ -3,7 +3,6 @@ package collectors
 import (
 	"bytes"
 	"fmt"
-	"reflect"
 	"sync"
 	"time"
 
@@ -24,19 +23,19 @@ type Net struct {
 // NewNet returns an initialized Net collector.
 func NewNet(period uint, level uint8, opts interface{}) *Net {
 
-	var options map[string]interface{}
 	var ifaces []string
 
 	if opts != nil {
-		options = opts.(map[string]interface{})
-		if val, ok := options["interfaces"]; ok {
-			if reflect.TypeOf(val).Kind() == reflect.Slice {
-				ifs := val.([]interface{})
-				for _, v := range ifs {
-					ifaces = append(ifaces, v.(string))
+		if options, ok := opts.(map[string]interface{}); ok {
+			if val, ok := options["interfaces"]; ok {
+				if ifs, ok := val.([]interface{}); ok {
+					for _, v := range ifs {
+						if s, ok := v.(string); ok {
+							ifaces = append(ifaces, s)
+						}
+					}
 				}
 			}
-
 		}
 
 	}
