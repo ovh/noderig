@@ -1,4 +1,3 @@
-ENV=GOOS=linux GOARCH=amd64
 BUILD_DIR=build
 CC=go build
 GITHASH=$(shell git rev-parse HEAD)
@@ -11,11 +10,11 @@ VPATH= $(BUILD_DIR)
 .SECONDEXPANSION:
 
 build: noderig.go $$(call rwildcard, ./cmd, *.go) $$(call rwildcard, ./collectors, *.go)
-	$(ENV) $(CC) $(DFLAGS) $(CFLAGS) -o $(BUILD_DIR)/noderig noderig.go
+	$(CC) $(DFLAGS) $(CFLAGS) -o $(BUILD_DIR)/noderig noderig.go
 
 .PHONY: release
 release: noderig.go $$(call rwildcard, ./cmd, *.go) $$(call rwildcard, ./collectors, *.go)
-	$(ENV) $(CC) $(CFLAGS) -o $(BUILD_DIR)/noderig noderig.go
+	$(CC) $(CFLAGS) -o $(BUILD_DIR)/noderig noderig.go
 
 .PHONY: lint
 lint:
