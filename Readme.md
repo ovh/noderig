@@ -143,6 +143,18 @@ listen: none             # Listen address, set to none to disable http endpoint 
 collectors: /opt/noderig # Custom collectors directory                          (Optional, default: none)
 ```
 
+
+#### Collectors Options
+
+Some collectors can accept optional parameters.
+
+```yaml
+net-opts: 
+  interfaces:            # Give a filtering list of interfaces for which you want metrics
+    - eth0
+    - eth1
+```
+
 ## Sample metrics
 
 ```

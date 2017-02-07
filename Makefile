@@ -1,5 +1,4 @@
 BUILD_DIR=build
-
 CC=go build
 GITHASH=$(shell git rev-parse HEAD)
 DFLAGS=-race
