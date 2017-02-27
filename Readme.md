@@ -84,25 +84,25 @@ Noderig have some built-in collectors.
 <tr><td>1</td><td>os.disk.fs{disk:/sda1}</td><td>disk used percent</td></tr>
 <tr><td rowspan="2">2</td><td>os.disk.fs.used{disk:/sda1}</td><td>disk used capacity (bytes)</td></tr>
 <tr><td>os.disk.fs.total{disk:/sda1}</td><td>disk total capacity (bytes)</td></tr>
-<tr><td rowspan="2">3</td><td>os.disk.fs.bytes.read{disk:/sda1}</td><td>disk read rate (bytes/s)</td></tr>
-<tr><td>os.disk.fs.bytes.write{disk:/sda1}</td><td>disk write rate (bytes/s)</td></tr>
-<tr><td rowspan="2">4</td><td>os.disk.fs.io.read{disk:/sda1}</td><td>disk io read rate (bytes/s)</td></tr>
-<tr><td>os.disk.fs.io.write{disk:/sda1}</td><td>disk io write rate (bytes/s)</td></tr>
+<tr><td rowspan="2">3</td><td>os.disk.fs.bytes.read{disk:/sda1}</td><td>disk read count (bytes)</td></tr>
+<tr><td>os.disk.fs.bytes.write{disk:/sda1}</td><td>disk write count (bytes)</td></tr>
+<tr><td rowspan="2">4</td><td>os.disk.fs.io.read{disk:/sda1}</td><td>disk io read count (bytes)</td></tr>
+<tr><td>os.disk.fs.io.write{disk:/sda1}</td><td>disk io write count (bytes)</td></tr>
 </table>
 
 ### Net
 <table>
 <tr><td>0</td><td></td><td>disabled metrics</td></tr>
-<tr><td rowspan="2">1</td><td>os.net.bytes{direction:in}</td><td>in bytes rate (bytes/s)</td></tr>
-<tr><td>os.net.bytes{direction:out}</td><td>out bytes rate (bytes/s)</td></tr>
-<tr><td rowspan="2">2</td><td>os.net.bytes{direction:in, iface:eth0}</td><td>iface in bytes rate (bytes/s)</td></tr>
-<tr><td>os.net.bytes{direction:out, iface:eth0}</td><td>iface out bytes rate (bytes/s)</td></tr>
-<tr><td rowspan="6">3</td><td>os.net.packets{direction:in, iface:eth0}</td><td>iface in packet rate (packet/s)</td></tr>
-<tr><td>os.net.packets{direction:out, iface:eth0}</td><td>iface out packet rate (packet/s)</td></tr>
-<tr><td>os.net.errs{direction:in, iface:eth0}</td><td>iface in err rate (err/s)</td></tr>
-<tr><td>os.net.errs{direction:out, iface:eth0}</td><td>iface out err rate (err/s)</td></tr>
-<tr><td>os.net.dropped{direction:in, iface:eth0}</td><td>iface in drop rate (drop/s)</td></tr>
-<tr><td>os.net.dropped{direction:out, iface:eth0}</td><td>iface out drop rate (drop/s)</td></tr>
+<tr><td rowspan="2">1</td><td>os.net.bytes{direction:in}</td><td>in bytes count (bytes)</td></tr>
+<tr><td>os.net.bytes{direction:out}</td><td>out bytes count (bytes)</td></tr>
+<tr><td rowspan="2">2</td><td>os.net.bytes{direction:in, iface:eth0}</td><td>iface in bytes count (bytes)</td></tr>
+<tr><td>os.net.bytes{direction:out, iface:eth0}</td><td>iface out bytes count (bytes)</td></tr>
+<tr><td rowspan="6">3</td><td>os.net.packets{direction:in, iface:eth0}</td><td>iface in packet count (packets)</td></tr>
+<tr><td>os.net.packets{direction:out, iface:eth0}</td><td>iface out packet count (packets)</td></tr>
+<tr><td>os.net.errs{direction:in, iface:eth0}</td><td>iface in error count (errors)</td></tr>
+<tr><td>os.net.errs{direction:out, iface:eth0}</td><td>iface out error count (errors)</td></tr>
+<tr><td>os.net.dropped{direction:in, iface:eth0}</td><td>iface in drop count (drops)</td></tr>
+<tr><td>os.net.dropped{direction:out, iface:eth0}</td><td>iface out drop count (drops)</td></tr>
 </table>
 
 ## Configuration
