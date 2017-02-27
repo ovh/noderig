@@ -12,8 +12,6 @@ import (
 
 // Disk collects disk related metrics
 type Disk struct {
-	counters map[string]disk.IOCountersStat
-
 	mutex     sync.RWMutex
 	sensision bytes.Buffer
 	level     uint8
@@ -59,11 +57,6 @@ func (c *Disk) scrape() error {
 		return err
 	}
 
-	if c.counters == nil {
-		c.counters = counters
-		return nil
-	}
-
 	parts, err := disk.Partitions(false)
 	if err != nil {
 		return err
@@ -97,26 +90,25 @@ func (c *Disk) scrape() error {
 			c.sensision.WriteString(gts)
 			gts = fmt.Sprintf("%v.total{disk=%v} %v\n", now, path, usage.Total)
 			c.sensision.WriteString(gts)
-
 		}
 	}
 
 	if c.level > 2 {
 		for name, stats := range counters {
-			gts := fmt.Sprintf("%v.bytes.read{name=%v} %v\n", now, name, (stats.ReadBytes - c.counters[name].ReadBytes) / uint64(c.period/1000))
+			gts := fmt.Sprintf("%v.bytes.read{name=%v} %v\n", now, name, stats.ReadBytes)
 			c.sensision.WriteString(gts)
-			gts = fmt.Sprintf("%v.bytes.write{name=%v} %v\n", now, name, (stats.WriteBytes - c.counters[name].WriteBytes) / uint64(c.period/1000))
+			gts = fmt.Sprintf("%v.bytes.write{name=%v} %v\n", now, name, stats.WriteBytes)
 			c.sensision.WriteString(gts)
 
 			if c.level > 3 {
-				gts = fmt.Sprintf("%v.io.read{name=%v} %v\n", now, name, (stats.ReadCount - c.counters[name].ReadCount) / uint64(c.period/1000))
+				gts = fmt.Sprintf("%v.io.read{name=%v} %v\n", now, name, stats.ReadCount)
 				c.sensision.WriteString(gts)
-				gts = fmt.Sprintf("%v.io.write{name=%v} %v\n", now, name, (stats.WriteCount - c.counters[name].WriteCount) / uint64(c.period/1000))
+				gts = fmt.Sprintf("%v.io.write{name=%v} %v\n", now, name, stats.WriteCount)
 				c.sensision.WriteString(gts)
+
 			}
 		}
 	}
 
-	c.counters = counters
 	return nil
 }

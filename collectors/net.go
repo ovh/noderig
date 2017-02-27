@@ -12,7 +12,6 @@ import (
 
 // Net collects network related metrics
 type Net struct {
-	counters   []net.IOCountersStat
 	interfaces []string
 	mutex      sync.RWMutex
 	sensision  bytes.Buffer
@@ -78,20 +77,15 @@ func (c *Net) scrape() error {
 		return err
 	}
 
-	if len(c.counters) == 0 { // init
-		c.counters = counters
-		return nil
-	}
-
 	var in, out uint64
-	for i, cnt := range counters {
+	for _, cnt := range counters {
 		if cnt.Name == "lo" {
 			continue
 		} else if c.interfaces != nil && !stringInSlice(cnt.Name, c.interfaces) {
 			continue
 		}
-		in += cnt.BytesRecv - c.counters[i].BytesRecv
-		out += cnt.BytesSent - c.counters[i].BytesSent
+		in += cnt.BytesRecv
+		out += cnt.BytesSent
 	}
 	in = in / uint64(c.period/1000)
 	out = out / uint64(c.period/1000)
@@ -113,48 +107,46 @@ func (c *Net) scrape() error {
 	}
 
 	if c.level > 1 {
-		for i, cnt := range counters {
+		for _, cnt := range counters {
 			if cnt.Name == "lo" {
 				continue
 			} else if c.interfaces != nil && !stringInSlice(cnt.Name, c.interfaces) {
 				continue
 			}
-			gts := fmt.Sprintf("%v os.net.bytes{iface=%v,direction=in} %v\n", now, cnt.Name, (cnt.BytesRecv-c.counters[i].BytesRecv)/uint64(c.period/1000))
+			gts := fmt.Sprintf("%v os.net.bytes{iface=%v,direction=in} %v\n", now, cnt.Name, cnt.BytesRecv)
 			c.sensision.WriteString(gts)
 
-			gts = fmt.Sprintf("%v os.net.bytes{iface=%v,direction=out} %v\n", now, cnt.Name, (cnt.BytesSent-c.counters[i].BytesSent)/uint64(c.period/1000))
+			gts = fmt.Sprintf("%v os.net.bytes{iface=%v,direction=out} %v\n", now, cnt.Name, cnt.BytesSent)
 			c.sensision.WriteString(gts)
 		}
 	}
 
 	if c.level > 2 {
-		for i, cnt := range counters {
+		for _, cnt := range counters {
 			if cnt.Name == "lo" {
 				continue
 			} else if c.interfaces != nil && !stringInSlice(cnt.Name, c.interfaces) {
 				continue
 			}
-			gts := fmt.Sprintf("%v os.net.packets{iface=%v,direction=in} %v\n", now, cnt.Name, (cnt.PacketsRecv-c.counters[i].PacketsRecv)/uint64(c.period/1000))
+			gts := fmt.Sprintf("%v os.net.packets{iface=%v,direction=in} %v\n", now, cnt.Name, cnt.PacketsRecv)
 			c.sensision.WriteString(gts)
 
-			gts = fmt.Sprintf("%v os.net.packets{iface=%v,direction=out} %v\n", now, cnt.Name, (cnt.PacketsSent-c.counters[i].PacketsSent)/uint64(c.period/1000))
+			gts = fmt.Sprintf("%v os.net.packets{iface=%v,direction=out} %v\n", now, cnt.Name, cnt.PacketsSent)
 			c.sensision.WriteString(gts)
 
-			gts = fmt.Sprintf("%v os.net.errs{iface=%v,direction=in} %v\n", now, cnt.Name, (cnt.Errin-c.counters[i].Errin)/uint64(c.period/1000))
+			gts = fmt.Sprintf("%v os.net.errs{iface=%v,direction=in} %v\n", now, cnt.Name, cnt.Errin)
 			c.sensision.WriteString(gts)
 
-			gts = fmt.Sprintf("%v os.net.errs{iface=%v,direction=out} %v\n", now, cnt.Name, (cnt.Errout-c.counters[i].Errout)/uint64(c.period/1000))
+			gts = fmt.Sprintf("%v os.net.errs{iface=%v,direction=out} %v\n", now, cnt.Name, cnt.Errout)
 			c.sensision.WriteString(gts)
 
-			gts = fmt.Sprintf("%v os.net.dropped{iface=%v,direction=in} %v\n", now, cnt.Name, (cnt.Dropin-c.counters[i].Dropin)/uint64(c.period/1000))
+			gts = fmt.Sprintf("%v os.net.dropped{iface=%v,direction=in} %v\n", now, cnt.Name, cnt.Dropin)
 			c.sensision.WriteString(gts)
 
-			gts = fmt.Sprintf("%v os.net.dropped{iface=%v,direction=out} %v\n", now, cnt.Name, (cnt.Dropout-c.counters[i].Dropout)/uint64(c.period/1000))
+			gts = fmt.Sprintf("%v os.net.dropped{iface=%v,direction=out} %v\n", now, cnt.Name, cnt.Dropout)
 			c.sensision.WriteString(gts)
 		}
 	}
-
-	c.counters = counters
 
 	return nil
 }
