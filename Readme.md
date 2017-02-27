@@ -88,6 +88,11 @@ Noderig have some built-in collectors.
 <tr><td>os.disk.fs.bytes.write{disk:/sda1}</td><td>disk write count (bytes)</td></tr>
 <tr><td rowspan="2">4</td><td>os.disk.fs.io.read{disk:/sda1}</td><td>disk io read count (bytes)</td></tr>
 <tr><td>os.disk.fs.io.write{disk:/sda1}</td><td>disk io write count (bytes)</td></tr>
+<tr><td rowspan="5">5</td><td>os.disk.fs.io.read.ms{disk:/sda1}</td><td>disk io read time (ms)</td></tr>
+<tr><td>os.disk.fs.io.write.ms{disk:/sda1}</td><td>disk io write time (ms)</td></tr>
+<tr><td>os.disk.fs.io{disk:/sda1}</td><td>disk io in progress (count)</td></tr>
+<tr><td>os.disk.fs.io.ms{disk:/sda1}</td><td>disk io time (ms)</td></tr>
+<tr><td>os.disk.fs.io.weighted.ms{disk:/sda1}</td><td>disk io weighted time (ms)</td></tr>
 </table>
 
 ### Net

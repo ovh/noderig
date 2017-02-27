@@ -106,6 +106,18 @@ func (c *Disk) scrape() error {
 				gts = fmt.Sprintf("%v.io.write{name=%v} %v\n", now, name, stats.WriteCount)
 				c.sensision.WriteString(gts)
 
+				if c.level > 4 {
+					gts = fmt.Sprintf("%v.io.read.ms{name=%v} %v\n", now, name, stats.ReadTime)
+					c.sensision.WriteString(gts)
+					gts = fmt.Sprintf("%v.io.write.ms{name=%v} %v\n", now, name, stats.WriteTime)
+					c.sensision.WriteString(gts)
+					gts = fmt.Sprintf("%v.io{name=%v} %v\n", now, name, stats.IopsInProgress)
+					c.sensision.WriteString(gts)
+					gts = fmt.Sprintf("%v.io.ms{name=%v} %v\n", now, name, stats.IoTime)
+					c.sensision.WriteString(gts)
+					gts = fmt.Sprintf("%v.io.weighted.ms{name=%v} %v\n", now, name, stats.WeightedIO)
+					c.sensision.WriteString(gts)
+				}
 			}
 		}
 	}
