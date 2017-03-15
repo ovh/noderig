@@ -175,7 +175,13 @@ scan:
 		labels = strings.TrimSuffix(labels, ",")
 
 		c.mutex.Lock()
-		gts := fmt.Sprintf("%v000000// %v{%v} %v\n", dp.Timestamp, dp.Metric, labels, dp.Value)
+		gts := fmt.Sprintf("%v000000// %v{%v} ", dp.Timestamp, dp.Metric, labels)
+		switch dp.Value.(type) {
+		default:
+			gts += fmt.Sprintf("%v\n", dp.Value)
+		case string:
+			gts += fmt.Sprintf("'%v'\n", dp.Value)
+		}
 		c.sensision.WriteString(gts)
 		c.mutex.Unlock()
 	}
