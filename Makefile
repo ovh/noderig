@@ -36,3 +36,28 @@ dev: format lint build
 .PHONY: clean
 clean:
 	-rm -r build
+
+# Docker build
+
+build-docker: build-go-in-docker build-docker-image
+
+glide-install:
+	go get github.com/Masterminds/glide
+	glide install
+
+go-build-in-docker:
+	$(CC) $(CFLAGS) noderig.go
+
+build-go-in-docker:
+	docker run --rm \
+		-e GOBIN=/go/bin/ -e CGO_ENABLED=0 -e GOPATH=/go \
+		-v ${PWD}:/go/src/github.com/runabove/noderig \
+		-w /go/src/github.com/runabove/noderig \
+		golang:1.8.0 \
+			make glide-install go-build-in-docker
+
+build-docker-image:
+	docker build -t runabove/noderig .
+
+run:
+	docker run --rm --net host runabove/noderig
