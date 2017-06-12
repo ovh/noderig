@@ -1,19 +1,22 @@
 language: go
-
 go:
-  - 1.7.x
-
-# this is necessary for fork builds to work
+- 1.7.x
 go_import_path: github.com/runabove/noderig
-
 before_install:
-  - go get github.com/Masterminds/glide
-  - go get github.com/alecthomas/gometalinter
-
-before_script:
-  gometalinter --install --update
-
+- go get github.com/Masterminds/glide
+- go get github.com/alecthomas/gometalinter
+before_script: gometalinter --install --update
 script:
-  - glide install
-  - make lint
-  - make
+- glide install
+- make lint
+- make
+deploy:
+  provider: releases
+  api_key:
+    secure: BeAP6a+vvDLua1TQd1eGuOfa6FfRDwAPYNvH+Fypby3qDGU84AI1eYCsE71qLn++Bt6muQsSjyG7RxbBFj2nXSiW4WWcEBVwQs4unErPZ/jrqjRN5GplQk8VDn2NNpWPMo4oRdCSM7CoOUkUhdYYBwIQ3bnBm93VHMHXbZCKDZGcALcX7/LchmuYaMeR8VktNqAHNjA2ZuIdPYMPkbadpZJlmFa/qEYH4WIGjdLoKPUK+SnERRRh4TVIwYzUIIWE+kDcmIViakj7t60TYZ0xw52PUL7e2fZ1Oi9v/pq1eXa39PVjPqSKLaFPYR/SWQoHNgOLv7MeTnQ3lc4jmBdDpVtXdcjkz9aXhUSUxhb/Tzt8eKZAYdBcG8mPSqh1um/lvcTuaE6UooTcEDH6YEpFLjCxEoQQqo2MfKa8db8MiQWL8ZCi4IqciPPKK8N2NJhYDrrw8ek9IKcRrY7QkDELTQJklXOR0YdjDDP3Z/oKKqVwmh+4xqaM9IpqHc9zZELKcuys6AHLdPygybccEJfn9VrBazBdM1bpqFR4bSgWE7nU5TybKg3sht3evA+t7rkBxbw3s9fTY1MycdByaqn81nIOhEYT8xVKfR0eXI4llvOd/lSaBkmjAvtXMJ7LXceSBT/4q10Bdwuyzk26/WS+AtLK57qyuuBoUiQ98MfaPbI=
+  file: build/noderig
+  skip_cleanup: true
+  on:
+    repo: runabove/noderig
+    branch: master
+    tags: true
