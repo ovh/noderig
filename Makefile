@@ -35,7 +35,7 @@ dev: format lint build
 
 .PHONY: clean
 clean:
-	-rm -r build
+	rm -rf $BUILD_DIR
 
 # Docker build
 
