@@ -1,4 +1,4 @@
-BUILD_DIR=build
+BUILD_DIR=${build_dir}/build
 CC=go build
 GITHASH=$(shell git rev-parse HEAD)
 DFLAGS=-race
@@ -35,7 +35,7 @@ dev: format lint build
 
 .PHONY: clean
 clean:
-	-rm -r build
+	rm -rf ${build_dir}/build
 
 # Docker build
 
