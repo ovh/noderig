@@ -90,6 +90,10 @@ func (c *Disk) scrape() error {
 			c.sensision.WriteString(gts)
 			gts = fmt.Sprintf("%v.total{disk=%v} %v\n", now, path, usage.Total)
 			c.sensision.WriteString(gts)
+			gts = fmt.Sprintf("%v.inodes.used{disk=%v} %v\n", now, path, usage.InodesUsed)
+			c.sensision.WriteString(gts)
+			gts = fmt.Sprintf("%v.inodes.total{disk=%v} %v\n", now, path, usage.InodesTotal)
+			c.sensision.WriteString(gts)
 		}
 	}
 
