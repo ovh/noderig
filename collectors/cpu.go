@@ -67,12 +67,16 @@ func (c *CPU) scrape() error {
 	systems := make([]float64, len(times))
 	users := make([]float64, len(times))
 	iowaits := make([]float64, len(times))
+	nices := make([]float64, len(times))
+	irqs := make([]float64, len(times))
 	for i, t := range times {
 		dt := t.Total() - c.times[i].Total()
 		idles[i] = (t.Idle - c.times[i].Idle) / dt
 		systems[i] = (t.System - c.times[i].System) / dt
 		users[i] = (t.User - c.times[i].User) / dt
 		iowaits[i] = (t.Iowait - c.times[i].Iowait) / dt
+		nices[i] = (t.Nice - c.times[i].Nice) / dt
+		irqs[i] = (t.Irq - c.times[i].Irq) / dt
 	}
 
 	global := 0.0
@@ -119,6 +123,22 @@ func (c *CPU) scrape() error {
 		system = system / float64(len(systems)) * 100
 		gts = fmt.Sprintf("%v.systems{} %v\n", class, system)
 		c.sensision.WriteString(gts)
+
+		nice := 0.0
+		for _, v := range nices {
+			nice += v
+		}
+		nice = nice / float64(len(nices)) * 100
+		gts = fmt.Sprintf("%v.nice{} %v\n", class, nice)
+		c.sensision.WriteString(gts)
+
+		irq := 0.0
+		for _, v := range irqs {
+			irq += v
+		}
+		irq = irq / float64(len(irqs)) * 100
+		gts = fmt.Sprintf("%v.irq{} %v\n", class, irq)
+		c.sensision.WriteString(gts)
 	}
 
 	if c.level == 3 {
@@ -134,6 +154,16 @@ func (c *CPU) scrape() error {
 
 		for i, v := range systems {
 			gts := fmt.Sprintf("%v.systems{chore=%v} %v\n", class, i, v*100)
+			c.sensision.WriteString(gts)
+		}
+
+		for i, v := range nices {
+			gts := fmt.Sprintf("%v.nice{chore=%v} %v\n", class, i, v*100)
+			c.sensision.WriteString(gts)
+		}
+
+		for i, v := range irqs {
+			gts := fmt.Sprintf("%v.irq{chore=%v} %v\n", class, i, v*100)
 			c.sensision.WriteString(gts)
 		}
 	}
