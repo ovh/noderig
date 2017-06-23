@@ -1,0 +1,17 @@
+noderig (2.0.2-2) master; urgency=medium
+
+  * Fix a typo in the logrotate config
+
+ -- Aurélien Nephtali <aurelien.nephtali@corp.ovh.com>  Mon, 26 Jun 2017 14:17:01 +0200
+
+noderig (2.0.2-1) master; urgency=medium
+
+  * Update to 2.0.2
+
+ -- Aurélien Nephtali <aurelien.nephtali@corp.ovh.com>  Thu, 22 Jun 2017 11:27:36 +0200
+
+noderig (2.0.1-1) master; urgency=medium
+
+  * Debian package
+
+ -- Aurélien Nephtali <aurelien.nephtali@corp.ovh.com>  Tue, 23 May 2017 10:39:05 +0200
