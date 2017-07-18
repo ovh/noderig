@@ -134,11 +134,17 @@ scan:
 				log.Warnf("%v: invalid timestamp - %v", c.path, t)
 				continue
 			}
-			val, err := strconv.ParseFloat(sp[2], 64)
+
+			var val interface{}
+			val, err = strconv.ParseInt(sp[2], 10, 64)
 			if err != nil {
-				log.Warnf("%v: invalid value - %v", c.path, t)
-				continue
+				val, err = strconv.ParseFloat(sp[2], 64)
+				if err != nil {
+					log.Warnf("%v: invalid value - %v", c.path, t)
+					continue
+				}
 			}
+
 			dp = dataPoint{
 				Metric:    sp[0],
 				Timestamp: ts,
