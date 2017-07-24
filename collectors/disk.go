@@ -80,19 +80,19 @@ func (c *Disk) scrape() error {
 	now := fmt.Sprintf("%v// os.disk.fs", time.Now().UnixNano()/1000)
 
 	for path, usage := range dev {
-		gts := fmt.Sprintf("%v{disk=%v} %v\n", now, path, usage.UsedPercent)
+		gts := fmt.Sprintf("%v{disk=%v, mount=%v} %v\n", now, path, usage.Path, usage.UsedPercent)
 		c.sensision.WriteString(gts)
 	}
 
 	if c.level > 1 {
 		for path, usage := range dev {
-			gts := fmt.Sprintf("%v.used{disk=%v} %v\n", now, path, usage.Used)
+			gts := fmt.Sprintf("%v.used{disk=%v, mount=%v} %v\n", now, path, usage.Path, usage.Used)
 			c.sensision.WriteString(gts)
-			gts = fmt.Sprintf("%v.total{disk=%v} %v\n", now, path, usage.Total)
+			gts = fmt.Sprintf("%v.total{disk=%v, mount=%v} %v\n", now, path, usage.Path, usage.Total)
 			c.sensision.WriteString(gts)
-			gts = fmt.Sprintf("%v.inodes.used{disk=%v} %v\n", now, path, usage.InodesUsed)
+			gts = fmt.Sprintf("%v.inodes.used{disk=%v, mount=%v} %v\n", now, path, usage.Path, usage.InodesUsed)
 			c.sensision.WriteString(gts)
-			gts = fmt.Sprintf("%v.inodes.total{disk=%v} %v\n", now, path, usage.InodesTotal)
+			gts = fmt.Sprintf("%v.inodes.total{disk=%v, mount=%v} %v\n", now, path, usage.Path, usage.InodesTotal)
 			c.sensision.WriteString(gts)
 		}
 	}

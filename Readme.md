@@ -86,10 +86,10 @@ Noderig have some built-in collectors.
 <table>
 <tr><td>0</td><td></td><td>disabled metrics</td></tr>
 <tr><td>1</td><td>os.disk.fs{disk:/sda1}</td><td>disk used percent</td></tr>
-<tr><td rowspan="4">2</td><td>os.disk.fs.used{disk:/sda1}</td><td>disk used capacity (bytes)</td></tr>
-<tr><td>os.disk.fs.total{disk:/sda1}</td><td>disk total capacity (bytes)</td></tr>
-<tr><td>os.disk.fs.inodes.used{disk:/sda1}</td><td>disk used inodes</td></tr>
-<tr><td>os.disk.fs.inodes.total{disk:/sda1}</td><td>disk total inodes</td></tr>
+<tr><td rowspan="4">2</td><td>os.disk.fs.used{disk:/sda1, mount:/}</td><td>disk used capacity (bytes)</td></tr>
+<tr><td>os.disk.fs.total{disk:/sda1, mount:/}</td><td>disk total capacity (bytes)</td></tr>
+<tr><td>os.disk.fs.inodes.used{disk:/sda1, mount:/}</td><td>disk used inodes</td></tr>
+<tr><td>os.disk.fs.inodes.total{disk:/sda1, mount:/}</td><td>disk total inodes</td></tr>
 <tr><td rowspan="2">3</td><td>os.disk.fs.bytes.read{disk:/sda1}</td><td>disk read count (bytes)</td></tr>
 <tr><td>os.disk.fs.bytes.write{disk:/sda1}</td><td>disk write count (bytes)</td></tr>
 <tr><td rowspan="2">4</td><td>os.disk.fs.io.read{disk:/sda1}</td><td>disk io read count (bytes)</td></tr>
