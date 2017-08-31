@@ -1,6 +1,6 @@
 # Noderig - Export OS stats as Sensision Metrics
 
-[![Build Status](https://travis-ci.org/runabove/noderig.svg?branch=master)](https://travis-ci.org/runabove/noderig)
+[![Build Status](https://travis-ci.org/ovh/noderig.svg?branch=master)](https://travis-ci.org/ovh/noderig)
 
 Noderig collect OS metrics and expose them through a Sensision HTTP endpoint. Each collector is easily configurable, thanks to a simple level cursor
 

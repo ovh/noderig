@@ -3,7 +3,7 @@ BUILD_DIR=build
 CC=go build
 GITHASH=$(shell git rev-parse HEAD)
 DFLAGS=-race
-CFLAGS=-ldflags "-X github.com/runabove/noderig/cmd.githash=$(GITHASH)"
+CFLAGS=-ldflags "-X github.com/ovh/noderig/cmd.githash=$(GITHASH)"
 CROSS=GOOS=linux GOARCH=amd64
 
 rwildcard=$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst *,%,$2),$d))
@@ -57,13 +57,13 @@ go-build-in-docker:
 build-go-in-docker:
 	docker run --rm \
 		-e GOBIN=/go/bin/ -e CGO_ENABLED=0 -e GOPATH=/go \
-		-v ${PWD}:/go/src/github.com/runabove/noderig \
-		-w /go/src/github.com/runabove/noderig \
+		-v ${PWD}:/go/src/github.com/ovh/noderig \
+		-w /go/src/github.com/ovh/noderig \
 		golang:1.8.0 \
 			make glide-install go-build-in-docker
 
 build-docker-image:
-	docker build -t runabove/noderig .
+	docker build -t ovh/noderig .
 
 run:
-	docker run --rm --net host runabove/noderig
+	docker run --rm --net host ovh/noderig
