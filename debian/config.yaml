@@ -1,0 +1,7 @@
+# Find details at https://github.com/runabove/noderig
+
+#cpu: 1  # CPU collector level     (Optional, default: 1)
+#mem: 1  # Memory collector level  (Optional, default: 1)
+#load: 1 # Load collector level    (Optional, default: 1)
+#disk: 1 # Disk collector level    (Optional, default: 1)
+#net: 1  # Network collector level (Optional, default: 1)

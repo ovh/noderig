@@ -1,6 +1,6 @@
 # Noderig - Export OS stats as Sensision Metrics
 
-[![Build Status](https://travis-ci.org/runabove/noderig.svg?branch=master)](https://travis-ci.org/runabove/noderig)
+[![Build Status](https://travis-ci.org/ovh/noderig.svg?branch=master)](https://travis-ci.org/ovh/noderig)
 
 Noderig collect OS metrics and expose them through a Sensision HTTP endpoint. Each collector is easily configurable, thanks to a simple level cursor
 
@@ -173,9 +173,9 @@ net-opts:
 1484828198560976// os.mem{} 24.328345730457112
 1484828198560976// os.swap{} 0
 1484828198557435// os.load1{} 0.63
-1484828198561366// os.net.bytes{direction:in} 858
-1484828198561366// os.net.bytes{direction:out} 778
-1484828197570759// os.disk.fs{disk:/dev/sda1} 4.967614357908193
+1484828198561366// os.net.bytes{direction=in} 858
+1484828198561366// os.net.bytes{direction=out} 778
+1484828197570759// os.disk.fs{disk=/dev/sda1} 4.967614357908193
 ```
 
 ## Contributing

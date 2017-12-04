@@ -13,8 +13,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/runabove/noderig/collectors"
-	"github.com/runabove/noderig/core"
+	"github.com/ovh/noderig/collectors"
+	"github.com/ovh/noderig/core"
 )
 
 var cfgFile string
@@ -158,7 +158,7 @@ var RootCmd = &cobra.Command{
 	             <body>
 	             <h1>Noderig</h1>
 	             <p><a href="/metrics">Metrics</a></p>
-	             <p><a href="https://github.com/runabove/noderig">Github</a></p>
+	             <p><a href="https://github.com/ovh/noderig">Github</a></p>
 	             </body>
 	             </html>`))
 
