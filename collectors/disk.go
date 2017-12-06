@@ -12,17 +12,51 @@ import (
 
 // Disk collects disk related metrics
 type Disk struct {
-	mutex     sync.RWMutex
-	sensision bytes.Buffer
-	level     uint8
-	period    uint
+	mutex            sync.RWMutex
+	sensision        bytes.Buffer
+	level            uint8
+	period           uint
+	filterDiskNames  bool
+	allowedDiskNames map[string]struct{}
+	allowedDisks     map[string]struct{}
 }
 
 // NewDisk returns an initialized Disk collector.
-func NewDisk(period uint, level uint8) *Disk {
+func NewDisk(period uint, level uint8, opts interface{}) *Disk {
+
+	allowedDiskNames := map[string]struct{}{}
+
+	allowedDisks := map[string]struct{}{}
+	if opts != nil {
+		if options, ok := opts.(map[string]interface{}); ok {
+			if val, ok := options["names"]; ok {
+				if diskNames, ok := val.([]interface{}); ok {
+					for _, v := range diskNames {
+						if diskName, ok := v.(string); ok {
+							allowedDiskNames[diskName] = struct{}{}
+						}
+					}
+				}
+			}
+
+			if val, ok := options["disks"]; ok {
+				if diskNames, ok := val.([]interface{}); ok {
+					for _, v := range diskNames {
+						if diskName, ok := v.(string); ok {
+							allowedDisks[diskName] = struct{}{}
+						}
+					}
+				}
+			}
+		}
+	}
+
 	c := &Disk{
-		level:  level,
-		period: period,
+		level:            level,
+		period:           period,
+		filterDiskNames:  len(allowedDiskNames)+len(allowedDiskNames) > 0,
+		allowedDiskNames: allowedDiskNames,
+		allowedDisks:     allowedDisks,
 	}
 
 	if level == 0 {
@@ -80,12 +114,26 @@ func (c *Disk) scrape() error {
 	now := fmt.Sprintf("%v// os.disk.fs", time.Now().UnixNano()/1000)
 
 	for path, usage := range dev {
+		if c.filterDiskNames {
+			if _, allowed := c.allowedDisks[path]; !allowed {
+				log.Debug("Disk " + path + " is blacklisted, skip it")
+				continue
+			}
+		}
 		gts := fmt.Sprintf("%v{disk=%v}{mount=%v} %v\n", now, path, usage.Path, usage.UsedPercent)
 		c.sensision.WriteString(gts)
 	}
 
 	if c.level > 1 {
 		for path, usage := range dev {
+			if c.filterDiskNames {
+
+				if _, allowed := c.allowedDisks[path]; !allowed {
+					log.Debug("Disk " + path + " is blacklisted, skip it")
+					continue
+				}
+			}
+
 			gts := fmt.Sprintf("%v.used{disk=%v}{mount=%v} %v\n", now, path, usage.Path, usage.Used)
 			c.sensision.WriteString(gts)
 			gts = fmt.Sprintf("%v.total{disk=%v}{mount=%v} %v\n", now, path, usage.Path, usage.Total)
@@ -99,6 +147,12 @@ func (c *Disk) scrape() error {
 
 	if c.level > 2 {
 		for name, stats := range counters {
+			if c.filterDiskNames {
+				if _, allowed := c.allowedDiskNames[name]; !allowed {
+					log.Debug("Disk name " + name + " is blacklisted, skip it")
+					continue
+				}
+			}
 			gts := fmt.Sprintf("%v.bytes.read{name=%v} %v\n", now, name, stats.ReadBytes)
 			c.sensision.WriteString(gts)
 			gts = fmt.Sprintf("%v.bytes.write{name=%v} %v\n", now, name, stats.WriteBytes)

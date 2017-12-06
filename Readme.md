@@ -85,20 +85,20 @@ Noderig have some built-in collectors.
 ### Disk
 <table>
 <tr><td>0</td><td></td><td>disabled metrics</td></tr>
-<tr><td>1</td><td>os.disk.fs{disk:/sda1}</td><td>disk used percent</td></tr>
-<tr><td rowspan="4">2</td><td>os.disk.fs.used{disk:/sda1, mount:/}</td><td>disk used capacity (bytes)</td></tr>
-<tr><td>os.disk.fs.total{disk:/sda1, mount:/}</td><td>disk total capacity (bytes)</td></tr>
-<tr><td>os.disk.fs.inodes.used{disk:/sda1, mount:/}</td><td>disk used inodes</td></tr>
-<tr><td>os.disk.fs.inodes.total{disk:/sda1, mount:/}</td><td>disk total inodes</td></tr>
-<tr><td rowspan="2">3</td><td>os.disk.fs.bytes.read{disk:/sda1}</td><td>disk read count (bytes)</td></tr>
-<tr><td>os.disk.fs.bytes.write{disk:/sda1}</td><td>disk write count (bytes)</td></tr>
-<tr><td rowspan="2">4</td><td>os.disk.fs.io.read{disk:/sda1}</td><td>disk io read count (bytes)</td></tr>
+<tr><td>1</td><td>os.disk.fs{disk:/dev/sda1}</td><td>disk used percent</td></tr>
+<tr><td rowspan="4">2</td><td>os.disk.fs.used{disk:/dev/sda1, mount:/}</td><td>disk used capacity (bytes)</td></tr>
+<tr><td>os.disk.fs.total{disk:/dev/sda1, mount:/}</td><td>disk total capacity (bytes)</td></tr>
+<tr><td>os.disk.fs.inodes.used{disk:/dev/sda1, mount:/}</td><td>disk used inodes</td></tr>
+<tr><td>os.disk.fs.inodes.total{disk:/dev/sda1, mount:/}</td><td>disk total inodes</td></tr>
+<tr><td rowspan="2">3</td><td>os.disk.fs.bytes.read{name:sda1}</td><td>disk read count (bytes)</td></tr>
+<tr><td>os.disk.fs.bytes.write{name:sda1}</td><td>disk write count (bytes)</td></tr>
+<tr><td rowspan="2">4</td><td>os.disk.fs.io.read{name:sda1}</td><td>disk io read count (bytes)</td></tr>
 <tr><td>os.disk.fs.io.write{disk:/sda1}</td><td>disk io write count (bytes)</td></tr>
-<tr><td rowspan="5">5</td><td>os.disk.fs.io.read.ms{disk:/sda1}</td><td>disk io read time (ms)</td></tr>
-<tr><td>os.disk.fs.io.write.ms{disk:/sda1}</td><td>disk io write time (ms)</td></tr>
-<tr><td>os.disk.fs.io{disk:/sda1}</td><td>disk io in progress (count)</td></tr>
-<tr><td>os.disk.fs.io.ms{disk:/sda1}</td><td>disk io time (ms)</td></tr>
-<tr><td>os.disk.fs.io.weighted.ms{disk:/sda1}</td><td>disk io weighted time (ms)</td></tr>
+<tr><td rowspan="5">5</td><td>os.disk.fs.io.read.ms{name:sda1}</td><td>disk io read time (ms)</td></tr>
+<tr><td>os.disk.fs.io.write.ms{name:sda1}</td><td>disk io write time (ms)</td></tr>
+<tr><td>os.disk.fs.io{name:sda1}</td><td>disk io in progress (count)</td></tr>
+<tr><td>os.disk.fs.io.ms{name:sda1}</td><td>disk io time (ms)</td></tr>
+<tr><td>os.disk.fs.io.weighted.ms{name:sda1}</td><td>disk io weighted time (ms)</td></tr>
 </table>
 
 ### Net
@@ -160,10 +160,20 @@ collectors: /opt/noderig # Custom collectors directory                          
 Some collectors can accept optional parameters.
 
 ```yaml
-net-opts: 
+net-opts:
   interfaces:            # Give a filtering list of interfaces for which you want metrics
     - eth0
     - eth1
+```
+
+```yaml
+disk-opts:
+  names:            # Give a filtering list of disks for which you want metrics
+    - sda1
+    - sda3
+  disks:
+    - /dev/sda1
+    - /dev/sda2
 ```
 
 ## Sample metrics

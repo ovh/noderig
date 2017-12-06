@@ -98,7 +98,7 @@ var RootCmd = &cobra.Command{
 		net := collectors.NewNet(uint(viper.GetInt("period")), uint8(viper.GetInt("net")), viper.Get("net-opts"))
 		cs = append(cs, net)
 
-		disk := collectors.NewDisk(uint(viper.GetInt("period")), uint8(viper.GetInt("disk")))
+		disk := collectors.NewDisk(uint(viper.GetInt("period")), uint8(viper.GetInt("disk")), viper.Get("disk-opts"))
 		cs = append(cs, disk)
 
 		// Load external collectors

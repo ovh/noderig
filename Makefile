@@ -3,7 +3,7 @@ BUILD_DIR=build
 CC=go build
 GITHASH=$(shell git rev-parse HEAD)
 DFLAGS=-race
-CFLAGS=-ldflags "-X github.com/ovh/noderig/cmd.githash=$(GITHASH)"
+CFLAGS=-X github.com/ovh/noderig/cmd.githash=$(GITHASH)
 CROSS=GOOS=linux GOARCH=amd64
 
 rwildcard=$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst *,%,$2),$d))
@@ -12,15 +12,15 @@ VPATH= $(BUILD_DIR)
 .SECONDEXPANSION:
 
 build: noderig.go $$(call rwildcard, ./cmd, *.go) $$(call rwildcard, ./collectors, *.go)
-	$(CC) $(DFLAGS) $(CFLAGS) -o $(BUILD_DIR)/noderig noderig.go
+	$(CC) $(DFLAGS) -ldflags "$(CFLAGS)" -o $(BUILD_DIR)/noderig noderig.go
 
 .PHONY: release
 release: noderig.go $$(call rwildcard, ./cmd, *.go) $$(call rwildcard, ./collectors, *.go)
-	$(CC) $(CFLAGS) -o $(BUILD_DIR)/noderig noderig.go
+	$(CC) -ldflags "$(CFLAGS)" -o $(BUILD_DIR)/noderig noderig.go
 
 .PHONY: dist
 dist: noderig.go $$(call rwildcard, ./cmd, *.go) $$(call rwildcard, ./collectors, *.go)
-	$(CROSS) $(CC) $(CFLAGS) -ldflags "-s -w" -o $(BUILD_DIR)/noderig noderig.go
+	$(CROSS) $(CC) -ldflags "$(CFLAGS) -s -w" -o $(BUILD_DIR)/noderig noderig.go
 
 .PHONY: lint
 lint:
@@ -52,7 +52,7 @@ glide-install:
 	glide install
 
 go-build-in-docker:
-	$(CC) $(CFLAGS) noderig.go
+	$(CC) -ldflags "$(CFLAGS)" noderig.go
 
 build-go-in-docker:
 	docker run --rm \
