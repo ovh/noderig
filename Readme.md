@@ -171,9 +171,6 @@ disk-opts:
   names:            # Give a filtering list of disks for which you want metrics
     - sda1
     - sda3
-  disks:
-    - /dev/sda1
-    - /dev/sda2
 ```
 
 ## Sample metrics

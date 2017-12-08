@@ -5,6 +5,6 @@ disk: 1
 net: 1
 disk-opts:
   names:
-    - sda
+    - sda1
 #flushPath: /tmp/noderig
 #listen: none
