@@ -3,6 +3,7 @@ package collectors
 import (
 	"bytes"
 	"fmt"
+	"path"
 	"sync"
 	"time"
 
@@ -12,31 +13,47 @@ import (
 
 // Disk collects disk related metrics
 type Disk struct {
-	mutex     sync.RWMutex
-	sensision bytes.Buffer
-	level     uint8
-	period    uint
+	mutex        sync.RWMutex
+	sensision    bytes.Buffer
+	level        uint8
+	period       uint
+	allowedDisks map[string]struct{}
 }
 
 // NewDisk returns an initialized Disk collector.
-func NewDisk(period uint, level uint8) *Disk {
-	c := &Disk{
-		level:  level,
-		period: period,
-	}
+func NewDisk(period uint, level uint8, opts interface{}) *Disk {
 
-	if level == 0 {
-		return c
-	}
-
-	tick := time.Tick(time.Duration(period) * time.Millisecond)
-	go func() {
-		for range tick {
-			if err := c.scrape(); err != nil {
-				log.Error(err)
+	allowedDisks := map[string]struct{}{}
+	if opts != nil {
+		if options, ok := opts.(map[string]interface{}); ok {
+			if val, ok := options["names"]; ok {
+				if diskNames, ok := val.([]interface{}); ok {
+					for _, v := range diskNames {
+						if diskName, ok := v.(string); ok {
+							allowedDisks[diskName] = struct{}{}
+						}
+					}
+				}
 			}
 		}
-	}()
+	}
+
+	c := &Disk{
+		level:        level,
+		period:       period,
+		allowedDisks: allowedDisks,
+	}
+
+	if level > 0 {
+		tick := time.Tick(time.Duration(period) * time.Millisecond)
+		go func() {
+			for range tick {
+				if err := c.scrape(); err != nil {
+					log.Error(err)
+				}
+			}
+		}()
+	}
 
 	return c
 }
@@ -79,26 +96,47 @@ func (c *Disk) scrape() error {
 
 	now := fmt.Sprintf("%v// os.disk.fs", time.Now().UnixNano()/1000)
 
-	for path, usage := range dev {
-		gts := fmt.Sprintf("%v{disk=%v}{mount=%v} %v\n", now, path, usage.Path, usage.UsedPercent)
+	for diskPath, usage := range dev {
+		if len(c.allowedDisks) > 0 {
+			_, diskName := path.Split(diskPath) // return "sda1" from "/dev/sda1"
+			if _, allowed := c.allowedDisks[diskName]; !allowed {
+				log.Debug("Disk " + diskPath + " is blacklisted, skip it")
+				continue
+			}
+		}
+		gts := fmt.Sprintf("%v{disk=%v}{mount=%v} %v\n", now, diskPath, usage.Path, usage.UsedPercent)
 		c.sensision.WriteString(gts)
 	}
 
 	if c.level > 1 {
-		for path, usage := range dev {
-			gts := fmt.Sprintf("%v.used{disk=%v}{mount=%v} %v\n", now, path, usage.Path, usage.Used)
+		for diskPath, usage := range dev {
+			if len(c.allowedDisks) > 0 {
+				_, diskName := path.Split(diskPath) // return "sda1" from "/dev/sda1"
+				if _, allowed := c.allowedDisks[diskName]; !allowed {
+					log.Debug("Disk " + diskPath + " is blacklisted, skip it")
+					continue
+				}
+			}
+
+			gts := fmt.Sprintf("%v.used{disk=%v}{mount=%v} %v\n", now, diskPath, usage.Path, usage.Used)
 			c.sensision.WriteString(gts)
-			gts = fmt.Sprintf("%v.total{disk=%v}{mount=%v} %v\n", now, path, usage.Path, usage.Total)
+			gts = fmt.Sprintf("%v.total{disk=%v}{mount=%v} %v\n", now, diskPath, usage.Path, usage.Total)
 			c.sensision.WriteString(gts)
-			gts = fmt.Sprintf("%v.inodes.used{disk=%v}{mount=%v} %v\n", now, path, usage.Path, usage.InodesUsed)
+			gts = fmt.Sprintf("%v.inodes.used{disk=%v}{mount=%v} %v\n", now, diskPath, usage.Path, usage.InodesUsed)
 			c.sensision.WriteString(gts)
-			gts = fmt.Sprintf("%v.inodes.total{disk=%v}{mount=%v} %v\n", now, path, usage.Path, usage.InodesTotal)
+			gts = fmt.Sprintf("%v.inodes.total{disk=%v}{mount=%v} %v\n", now, diskPath, usage.Path, usage.InodesTotal)
 			c.sensision.WriteString(gts)
 		}
 	}
 
 	if c.level > 2 {
 		for name, stats := range counters {
+			if len(c.allowedDisks) > 0 {
+				if _, allowed := c.allowedDisks[name]; !allowed {
+					log.Debug("Disk name " + name + " is blacklisted, skip it")
+					continue
+				}
+			}
 			gts := fmt.Sprintf("%v.bytes.read{name=%v} %v\n", now, name, stats.ReadBytes)
 			c.sensision.WriteString(gts)
 			gts = fmt.Sprintf("%v.bytes.write{name=%v} %v\n", now, name, stats.WriteBytes)
