@@ -17,14 +17,12 @@ import (
 	"github.com/ovh/noderig/core"
 )
 
-var cfgFile string
-var verbose bool
-
 // Aggregator init - define command line arguments.
 func init() {
 	cobra.OnInitialize(initConfig)
-	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file to use")
-	RootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
+	RootCmd.PersistentFlags().StringP("config", "", "", "config file to use")
+	RootCmd.PersistentFlags().BoolP("verbose", "v", false, "verbose output")
+
 	RootCmd.Flags().StringP("listen", "l", "127.0.0.1:9100", "listen address")
 	RootCmd.Flags().Uint8("cpu", 1, "cpu metrics level")
 	RootCmd.Flags().Uint8("load", 1, "load metrics level")
@@ -35,12 +33,13 @@ func init() {
 	RootCmd.Flags().StringP("collectors", "c", "./collectors", "external collectors directory")
 	RootCmd.Flags().Uint64P("keep-for", "k", 3, "keep collectors data for the given number of fetch")
 
+	viper.BindPFlags(RootCmd.PersistentFlags())
 	viper.BindPFlags(RootCmd.Flags())
 }
 
 // Load config - initialize defaults and read config.
 func initConfig() {
-	if verbose {
+	if viper.GetBool("verbose") {
 		log.SetLevel(log.DebugLevel)
 	}
 
@@ -67,6 +66,7 @@ func initConfig() {
 	}
 
 	// Load user defined config
+	cfgFile := viper.GetString("config")
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
 		err := viper.ReadInConfig()
