@@ -1,6 +1,6 @@
 language: go
 go:
-- 1.7.x
+- 1.8.x
 go_import_path: github.com/ovh/noderig
 before_install:
 - go get github.com/Masterminds/glide

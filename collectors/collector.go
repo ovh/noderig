@@ -6,7 +6,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/url"
 	"os/exec"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -105,6 +107,8 @@ func (c *Collector) scrape() (cmdError error) {
 		ew.Close()
 	}()
 
+	tagPattern := regexp.MustCompile(`^[a-zA-Z0-9-_\.\/]*$`)
+
 	// Stderr handler
 	go func() {
 		es := bufio.NewScanner(er)
@@ -115,7 +119,6 @@ func (c *Collector) scrape() (cmdError error) {
 	}()
 
 	// Stdout handler
-scan:
 	for s.Scan() {
 		t := strings.TrimSpace(s.Text())
 		if len(t) == 0 {
@@ -129,38 +132,63 @@ scan:
 				log.Warnf("%v: invalid data point - %v", c.path, sp)
 				continue
 			}
-			ts, err := strconv.ParseInt(sp[1], 10, 64)
+			dp = dataPoint{
+				Tags: make(map[string]string),
+			}
+
+			// Class
+			idx := strings.Index(t, " ")
+			if idx < 0 {
+				log.Warnf("%v: invalid data point - %v", c.path, sp)
+				continue
+			}
+			dp.Metric = t[:idx]
+			t = strings.TrimSpace(t[idx:])
+
+			// Timestamp
+			idx = strings.Index(t, " ")
+			if idx < 0 {
+				log.Warnf("%v: invalid data point - %v", c.path, sp)
+				continue
+			}
+			ts, err := strconv.ParseInt(t[:idx], 10, 64)
 			if err != nil {
 				log.Warnf("%v: invalid timestamp - %v", c.path, t)
 				continue
 			}
+			dp.Timestamp = ts
+			t = strings.TrimSpace(t[idx:])
+
+			// Labels
+			for {
+				idx = strings.LastIndex(t, " ")
+				if idx < 0 {
+					break
+				}
+
+				tag := strings.TrimSpace(t[idx:])
+
+				sp := strings.SplitN(tag, "=", 2)
+				if len(sp) != 2 {
+					break
+				}
+				if !tagPattern.MatchString(sp[0]) || !tagPattern.MatchString(sp[1]) {
+					break
+				}
+				dp.Tags[c.sanitize(sp[0])] = c.sanitize(sp[1])
+
+				t = strings.TrimSpace(t[:idx])
+			}
 
 			var val interface{}
-			val, err = strconv.ParseInt(sp[2], 10, 64)
+			val, err = strconv.ParseInt(t, 10, 64)
 			if err != nil {
-				val, err = strconv.ParseFloat(sp[2], 64)
+				val, err = strconv.ParseFloat(t, 64)
 				if err != nil {
-					log.Warnf("%v: invalid value - %v", c.path, t)
-					continue
+					val = t
 				}
 			}
-
-			dp = dataPoint{
-				Metric:    sp[0],
-				Timestamp: ts,
-				Value:     val,
-				Tags:      make(map[string]string),
-			}
-			for _, tag := range sp[3:] {
-				for _, v := range strings.Split(tag, ",") {
-					sp := strings.SplitN(v, "=", 2)
-					if len(sp) != 2 {
-						log.Warnf("%v: invalid tag - %v", c.path, t)
-						continue scan
-					}
-					dp.Tags[c.sanitize(sp[0])] = c.sanitize(sp[1])
-				}
-			}
+			dp.Value = val
 		} else {
 			if err := json.Unmarshal([]byte(t), &dp); err != nil {
 				// Maybe meta json
@@ -186,7 +214,7 @@ scan:
 		default:
 			gts += fmt.Sprintf("%v\n", dp.Value)
 		case string:
-			gts += fmt.Sprintf("'%v'\n", dp.Value)
+			gts += fmt.Sprintf("'%v'\n", url.PathEscape(dp.Value.(string)))
 		}
 		c.sensision.WriteString(gts)
 		c.mutex.Unlock()
