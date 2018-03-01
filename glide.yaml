@@ -5,4 +5,4 @@ import:
 - package: github.com/spf13/cobra
 - package: github.com/spf13/viper
 - package: github.com/shirou/gopsutil
-  version: ^2.16.12
+  version: ^2.18.01
