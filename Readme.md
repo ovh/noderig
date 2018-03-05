@@ -56,13 +56,13 @@ Noderig have some built-in collectors.
 <tr><td>os.cpu.systems{}</td><td>combined percentage of cpu systems</td></tr>
 <tr><td>os.cpu.nice{}</td><td>combined percentage of cpu nice</td></tr>
 <tr><td>os.cpu.irq{}</td><td>combined percentage of cpu irq</td></tr>
-<tr><td>os.cpu.temperature{id:n}</td><td>temperature of cpu n</td></tr>
-<tr><td rowspan="5">3</td><td>os.cpu.iowait{chore:n}</td><td>chore percentage of cpu iowait</td></tr>
-<tr><td>os.cpu.user{chore:n}</td><td>chore percentage of cpu user</td></tr>
-<tr><td>os.cpu.systems{chore:n}</td><td>chore percentage of cpu systems</td></tr>
-<tr><td>os.cpu.nice{chore:n}</td><td>chore percentage of cpu nice</td></tr>
-<tr><td>os.cpu.irq{chore:n}</td><td>chore percentage of cpu irq</td></tr>
-<tr><td>os.cpu.temperature{core:n}</td><td>temperature of cpu core n</td></tr>
+<tr><td>os.cpu.temperature{id=n}</td><td>temperature of cpu n</td></tr>
+<tr><td rowspan="5">3</td><td>os.cpu.iowait{chore=n}</td><td>chore percentage of cpu iowait</td></tr>
+<tr><td>os.cpu.user{chore=n}</td><td>chore percentage of cpu user</td></tr>
+<tr><td>os.cpu.systems{chore=n}</td><td>chore percentage of cpu systems</td></tr>
+<tr><td>os.cpu.nice{chore=n}</td><td>chore percentage of cpu nice</td></tr>
+<tr><td>os.cpu.irq{chore=n}</td><td>chore percentage of cpu irq</td></tr>
+<tr><td>os.cpu.temperature{core=n}</td><td>temperature of cpu core n</td></tr>
 </table>
 
 ### Memory
@@ -87,35 +87,35 @@ Noderig have some built-in collectors.
 ### Disk
 <table>
 <tr><td>0</td><td></td><td>disabled metrics</td></tr>
-<tr><td>1</td><td>os.disk.fs{disk:/dev/sda1}</td><td>disk used percent</td></tr>
-<tr><td rowspan="4">2</td><td>os.disk.fs.used{disk:/dev/sda1, mount:/}</td><td>disk used capacity (bytes)</td></tr>
-<tr><td>os.disk.fs.total{disk:/dev/sda1, mount:/}</td><td>disk total capacity (bytes)</td></tr>
-<tr><td>os.disk.fs.inodes.used{disk:/dev/sda1, mount:/}</td><td>disk used inodes</td></tr>
-<tr><td>os.disk.fs.inodes.total{disk:/dev/sda1, mount:/}</td><td>disk total inodes</td></tr>
-<tr><td rowspan="2">3</td><td>os.disk.fs.bytes.read{name:sda1}</td><td>disk read count (bytes)</td></tr>
-<tr><td>os.disk.fs.bytes.write{name:sda1}</td><td>disk write count (bytes)</td></tr>
-<tr><td rowspan="2">4</td><td>os.disk.fs.io.read{name:sda1}</td><td>disk io read count (bytes)</td></tr>
-<tr><td>os.disk.fs.io.write{disk:/sda1}</td><td>disk io write count (bytes)</td></tr>
-<tr><td rowspan="5">5</td><td>os.disk.fs.io.read.ms{name:sda1}</td><td>disk io read time (ms)</td></tr>
-<tr><td>os.disk.fs.io.write.ms{name:sda1}</td><td>disk io write time (ms)</td></tr>
-<tr><td>os.disk.fs.io{name:sda1}</td><td>disk io in progress (count)</td></tr>
-<tr><td>os.disk.fs.io.ms{name:sda1}</td><td>disk io time (ms)</td></tr>
-<tr><td>os.disk.fs.io.weighted.ms{name:sda1}</td><td>disk io weighted time (ms)</td></tr>
+<tr><td>1</td><td>os.disk.fs{disk=/dev/sda1}</td><td>disk used percent</td></tr>
+<tr><td rowspan="4">2</td><td>os.disk.fs.used{disk=/dev/sda1, mount=/}</td><td>disk used capacity (bytes)</td></tr>
+<tr><td>os.disk.fs.total{disk=/dev/sda1,mount=/}</td><td>disk total capacity (bytes)</td></tr>
+<tr><td>os.disk.fs.inodes.used{disk=/dev/sda1,mount=/}</td><td>disk used inodes</td></tr>
+<tr><td>os.disk.fs.inodes.total{disk=/dev/sda1,mount=/}</td><td>disk total inodes</td></tr>
+<tr><td rowspan="2">3</td><td>os.disk.fs.bytes.read{name=sda1}</td><td>disk read count (bytes)</td></tr>
+<tr><td>os.disk.fs.bytes.write{name=sda1}</td><td>disk write count (bytes)</td></tr>
+<tr><td rowspan="2">4</td><td>os.disk.fs.io.read{name=sda1}</td><td>disk io read count (bytes)</td></tr>
+<tr><td>os.disk.fs.io.write{disk=/sda1}</td><td>disk io write count (bytes)</td></tr>
+<tr><td rowspan="5">5</td><td>os.disk.fs.io.read.ms{name=sda1}</td><td>disk io read time (ms)</td></tr>
+<tr><td>os.disk.fs.io.write.ms{name=sda1}</td><td>disk io write time (ms)</td></tr>
+<tr><td>os.disk.fs.io{name=sda1}</td><td>disk io in progress (count)</td></tr>
+<tr><td>os.disk.fs.io.ms{name=sda1}</td><td>disk io time (ms)</td></tr>
+<tr><td>os.disk.fs.io.weighted.ms{name=sda1}</td><td>disk io weighted time (ms)</td></tr>
 </table>
 
 ### Net
 <table>
 <tr><td>0</td><td></td><td>disabled metrics</td></tr>
-<tr><td rowspan="2">1</td><td>os.net.bytes{direction:in}</td><td>in bytes count (bytes)</td></tr>
-<tr><td>os.net.bytes{direction:out}</td><td>out bytes count (bytes)</td></tr>
-<tr><td rowspan="2">2</td><td>os.net.bytes{direction:in, iface:eth0}</td><td>iface in bytes count (bytes)</td></tr>
-<tr><td>os.net.bytes{direction:out, iface:eth0}</td><td>iface out bytes count (bytes)</td></tr>
-<tr><td rowspan="6">3</td><td>os.net.packets{direction:in, iface:eth0}</td><td>iface in packet count (packets)</td></tr>
-<tr><td>os.net.packets{direction:out, iface:eth0}</td><td>iface out packet count (packets)</td></tr>
-<tr><td>os.net.errs{direction:in, iface:eth0}</td><td>iface in error count (errors)</td></tr>
-<tr><td>os.net.errs{direction:out, iface:eth0}</td><td>iface out error count (errors)</td></tr>
-<tr><td>os.net.dropped{direction:in, iface:eth0}</td><td>iface in drop count (drops)</td></tr>
-<tr><td>os.net.dropped{direction:out, iface:eth0}</td><td>iface out drop count (drops)</td></tr>
+<tr><td rowspan="2">1</td><td>os.net.bytes{direction=in}</td><td>in bytes count (bytes)</td></tr>
+<tr><td>os.net.bytes{direction=out}</td><td>out bytes count (bytes)</td></tr>
+<tr><td rowspan="2">2</td><td>os.net.bytes{direction=in,iface=eth0}</td><td>iface in bytes count (bytes)</td></tr>
+<tr><td>os.net.bytes{direction=out,iface=eth0}</td><td>iface out bytes count (bytes)</td></tr>
+<tr><td rowspan="6">3</td><td>os.net.packets{direction=in,iface=eth0}</td><td>iface in packet count (packets)</td></tr>
+<tr><td>os.net.packets{direction=out,iface=eth0}</td><td>iface out packet count (packets)</td></tr>
+<tr><td>os.net.errs{direction=in,iface=eth0}</td><td>iface in error count (errors)</td></tr>
+<tr><td>os.net.errs{direction=out,iface=eth0}</td><td>iface out error count (errors)</td></tr>
+<tr><td>os.net.dropped{direction=in,iface=eth0}</td><td>iface in drop count (drops)</td></tr>
+<tr><td>os.net.dropped{direction=out,iface=eth0}</td><td>iface out drop count (drops)</td></tr>
 </table>
 
 ## Configuration
