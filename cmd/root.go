@@ -86,7 +86,7 @@ var RootCmd = &cobra.Command{
 		// Build collectors
 		var cs []core.Collector
 
-		cpu := collectors.NewCPU(uint(viper.GetInt("period")), uint8(viper.GetInt("cpu")))
+		cpu := collectors.NewCPU(uint(viper.GetInt("period")), uint8(viper.GetInt("cpu")), viper.GetStringSlice("cpu-mods"))
 		cs = append(cs, cpu)
 
 		mem := collectors.NewMemory(uint(viper.GetInt("period")), uint8(viper.GetInt("mem")))
