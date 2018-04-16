@@ -56,11 +56,13 @@ Noderig have some built-in collectors.
 <tr><td>os.cpu.systems{}</td><td>combined percentage of cpu systems</td></tr>
 <tr><td>os.cpu.nice{}</td><td>combined percentage of cpu nice</td></tr>
 <tr><td>os.cpu.irq{}</td><td>combined percentage of cpu irq</td></tr>
+<tr><td>os.cpu.temperature{id:n}</td><td>temperature of cpu n</td></tr>
 <tr><td rowspan="5">3</td><td>os.cpu.iowait{chore:n}</td><td>chore percentage of cpu iowait</td></tr>
 <tr><td>os.cpu.user{chore:n}</td><td>chore percentage of cpu user</td></tr>
 <tr><td>os.cpu.systems{chore:n}</td><td>chore percentage of cpu systems</td></tr>
 <tr><td>os.cpu.nice{chore:n}</td><td>chore percentage of cpu nice</td></tr>
 <tr><td>os.cpu.irq{chore:n}</td><td>chore percentage of cpu irq</td></tr>
+<tr><td>os.cpu.temperature{core:n}</td><td>temperature of cpu core n</td></tr>
 </table>
 
 ### Memory

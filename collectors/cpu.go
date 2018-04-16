@@ -3,11 +3,13 @@ package collectors
 import (
 	"bytes"
 	"fmt"
+	"regexp"
 	"sync"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/shirou/gopsutil/cpu"
+	"github.com/shirou/gopsutil/host"
 )
 
 // CPU collects cpu related metrics
@@ -139,6 +141,23 @@ func (c *CPU) scrape() error {
 		irq = irq / float64(len(irqs)) * 100
 		gts = fmt.Sprintf("%v.irq{} %v\n", class, irq)
 		c.sensision.WriteString(gts)
+
+		re := regexp.MustCompile("^coretemp_packageid([0-9+])_input$")
+		temps, err := host.SensorsTemperatures()
+		if err != nil {
+			return err
+		}
+
+		for _, temp := range temps {
+			submatches := re.FindStringSubmatch(temp.SensorKey)
+			if len(submatches) > 0 {
+				gts = fmt.Sprintf(
+					"%v.temperature{id=%v} %v\n",
+					class, submatches[1], temp.Temperature,
+				)
+				c.sensision.WriteString(gts)
+			}
+		}
 	}
 
 	if c.level == 3 {
@@ -165,6 +184,23 @@ func (c *CPU) scrape() error {
 		for i, v := range irqs {
 			gts := fmt.Sprintf("%v.irq{chore=%v} %v\n", class, i, v*100)
 			c.sensision.WriteString(gts)
+		}
+
+		re := regexp.MustCompile("^coretemp_core([0-9+])_input$")
+		temps, err := host.SensorsTemperatures()
+		if err != nil {
+			return err
+		}
+
+		for _, temp := range temps {
+			submatches := re.FindStringSubmatch(temp.SensorKey)
+			if len(submatches) > 0 {
+				gts = fmt.Sprintf(
+					"%v.temperature{core=%v} %v\n",
+					class, submatches[1], temp.Temperature,
+				)
+				c.sensision.WriteString(gts)
+			}
 		}
 	}
 
