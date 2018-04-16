@@ -19,12 +19,14 @@ type CPU struct {
 	mutex     sync.RWMutex
 	sensision bytes.Buffer
 	level     uint8
+	modules   []string
 }
 
 // NewCPU returns an initialized CPU collector.
-func NewCPU(period uint, level uint8) *CPU {
+func NewCPU(period uint, level uint8, modules []string) *CPU {
 	c := &CPU{
-		level: level,
+		level:   level,
+		modules: modules,
 	}
 
 	if level == 0 {
@@ -141,23 +143,6 @@ func (c *CPU) scrape() error {
 		irq = irq / float64(len(irqs)) * 100
 		gts = fmt.Sprintf("%v.irq{} %v\n", class, irq)
 		c.sensision.WriteString(gts)
-
-		re := regexp.MustCompile("^coretemp_packageid([0-9+])_input$")
-		temps, err := host.SensorsTemperatures()
-		if err != nil {
-			return err
-		}
-
-		for _, temp := range temps {
-			submatches := re.FindStringSubmatch(temp.SensorKey)
-			if len(submatches) > 0 {
-				gts = fmt.Sprintf(
-					"%v.temperature{id=%v} %v\n",
-					class, submatches[1], temp.Temperature,
-				)
-				c.sensision.WriteString(gts)
-			}
-		}
 	}
 
 	if c.level == 3 {
@@ -185,22 +170,58 @@ func (c *CPU) scrape() error {
 			gts := fmt.Sprintf("%v.irq{chore=%v} %v\n", class, i, v*100)
 			c.sensision.WriteString(gts)
 		}
+	}
 
-		re := regexp.MustCompile("^coretemp_core([0-9+])_input$")
-		temps, err := host.SensorsTemperatures()
-		if err != nil {
-			return err
-		}
-
-		for _, temp := range temps {
-			submatches := re.FindStringSubmatch(temp.SensorKey)
-			if len(submatches) > 0 {
-				gts = fmt.Sprintf(
-					"%v.temperature{core=%v} %v\n",
-					class, submatches[1], temp.Temperature,
-				)
-				c.sensision.WriteString(gts)
+	for _, m := range c.modules {
+		switch m {
+		case "temperature":
+			temps, err := host.SensorsTemperatures()
+			if err != nil {
+				return err
 			}
+
+			platform, _, _, err := host.PlatformInformation()
+			if err != nil {
+				return err
+			}
+
+			// Get CPU temperature
+			re := regexp.MustCompile("^coretemp_packageid([0-9+])_input$")
+			if platform == "darwin" {
+				re = regexp.MustCompile("^TC([0-9+])P$")
+			}
+
+			for _, temp := range temps {
+				submatches := re.FindStringSubmatch(temp.SensorKey)
+				if len(submatches) > 0 {
+					gts = fmt.Sprintf(
+						"%v.temperature{id=%v} %v\n",
+						class, submatches[1], temp.Temperature,
+					)
+					c.sensision.WriteString(gts)
+				}
+			}
+
+			if c.level >= 2 {
+				// Get per core temp
+				re := regexp.MustCompile("^coretemp_core([0-9+])_input$")
+				if platform == "darwin" {
+					re = regexp.MustCompile("^TC([0-9+])C$")
+				}
+
+				for _, temp := range temps {
+					submatches := re.FindStringSubmatch(temp.SensorKey)
+					if len(submatches) > 0 {
+						gts = fmt.Sprintf(
+							"%v.temperature{core=%v} %v\n",
+							class, submatches[1], temp.Temperature,
+						)
+						c.sensision.WriteString(gts)
+					}
+				}
+			}
+		default:
+			log.Warnf("[CPU] module '%s' not found", m)
 		}
 	}
 
