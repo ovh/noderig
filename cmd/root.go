@@ -50,21 +50,6 @@ func initConfig() {
 	viper.SetEnvPrefix("noderig")
 	viper.AutomaticEnv()
 
-	// Set config search path
-	viper.AddConfigPath("/etc/noderig/")
-	viper.AddConfigPath("$HOME/.noderig")
-	viper.AddConfigPath(".")
-
-	// Load config
-	viper.SetConfigName("config")
-	if err := viper.MergeInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			log.Debug("No config file found")
-		} else {
-			log.Panicf("Fatal error in config file: %v \n", err)
-		}
-	}
-
 	// Load user defined config
 	cfgFile := viper.GetString("config")
 	if cfgFile != "" {
@@ -72,6 +57,21 @@ func initConfig() {
 		err := viper.ReadInConfig()
 		if err != nil {
 			log.Panicf("Fatal error in config file: %v \n", err)
+		}
+	} else {
+		// Set config search path
+		viper.AddConfigPath("/etc/noderig/")
+		viper.AddConfigPath("$HOME/.noderig")
+		viper.AddConfigPath(".")
+
+		// Load default config
+		viper.SetConfigName("config")
+		if err := viper.MergeInConfig(); err != nil {
+			if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+				log.Debug("No config file found")
+			} else {
+				log.Panicf("Fatal error in config file: %v \n", err)
+			}
 		}
 	}
 }
