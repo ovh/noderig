@@ -81,6 +81,9 @@ func (c *Disk) scrape() error {
 
 	dev := make(map[string]disk.UsageStat)
 	for _, p := range parts {
+		if _, ok := dev[p.Device]; ok {
+			continue
+		}
 		usage, err := disk.Usage(p.Mountpoint)
 		if err != nil {
 			continue
