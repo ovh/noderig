@@ -41,7 +41,7 @@ imports:
   - process
 - name: github.com/shirou/w32
   version: bb4de0191aa41b5507caa14b0650cdbddcd9280b
-- name: github.com/Sirupsen/logrus
+- name: github.com/sirupsen/logrus
   version: ba1b36c82c5e05c4f912a88eab0dcd91a171688f
 - name: github.com/spf13/afero
   version: 2f30b2a92c0e5700bcfe4715891adb1f2a7a406d
