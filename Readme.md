@@ -10,6 +10,7 @@ Noderig metrics:
 - Load
 - Disk
 - Net
+- Processes
 - External collectors
 
 ## Status
@@ -40,6 +41,7 @@ Flags:
       --mem uint8         memory metrics level (default 1)
       --net uint8         network metrics level (default 1)
       --load uint8        load metrics level (default 1)
+      --process uint8   processes metrics level (default 0)
   -c  --collectors string external collectors directory (default "./collectors")
   -k  --keep-for uint     keep collectors data for the given number of fetch (default 3)
 ```
@@ -119,6 +121,12 @@ Noderig have some built-in collectors.
 <tr><td>os.net.dropped{direction=out,iface=eth0}</td><td>iface out drop count (drops)</td></tr>
 </table>
 
+### Process
+<table>
+<tr><td>0</td><td></td><td>disabled metrics</td></tr>
+<tr><td rowspan="2">1</td><td>os.process.up{name=ntpd}</td><td>is process running (boolean)</td></tr>
+</table>
+
 ## Configuration
 
 Noderig can read a simple default [config file](config.yaml).
@@ -140,11 +148,12 @@ Noderig have some built-in collectors. They could be configured by a log level.
 You can also defined custom collectors, in an scollector way. (see: http://bosun.org/scollector/external-collectors)
 
 ```yaml
-cpu: 1  # CPU collector level     (Optional, default: 1)
-mem: 1  # Memory collector level  (Optional, default: 1)
-load: 1 # Load collector level    (Optional, default: 1)
-disk: 1 # Disk collector level    (Optional, default: 1)
-net: 1  # Network collector level (Optional, default: 1)
+cpu: 1      # CPU collector level     (Optional, default: 1)
+mem: 1      # Memory collector level  (Optional, default: 1)
+load: 1     # Load collector level    (Optional, default: 1)
+disk: 1     # Disk collector level    (Optional, default: 1)
+net: 1      # Network collector level (Optional, default: 1)
+process: 0  # Process collector level (Optional, default: 0)
 ```
 
 #### Collectors Modules
@@ -173,6 +182,13 @@ disk-opts:
   names:            # Give a filtering list of disks for which you want metrics
     - sda1
     - sda3
+```
+
+```yaml
+process-opts:
+  whitelist: # Give a filtering list of processes to watch
+    - httpd
+    - noderig
 ```
 
 #### Parameters
