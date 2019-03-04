@@ -1,4 +1,13 @@
-FROM alpine:3.5
+FROM debian:stretch
 EXPOSE 9100
-ENTRYPOINT ["/usr/bin/noderig"]
-COPY noderig /usr/bin/noderig
+
+ENV NODERIG_VERSION=v2.3.1
+
+RUN apt-get update && \
+    apt-get install -y wget && \
+    wget -q https://github.com/ovh/noderig/releases/download/$NODERIG_VERSION/noderig && \
+    chmod +x noderig
+
+ADD custom_collectors /collectors
+
+ENTRYPOINT ["/noderig"]
