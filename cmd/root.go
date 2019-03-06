@@ -3,9 +3,11 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"os/signal"
 	"path"
 	"strconv"
 	"sync"
+	"syscall"
 	"time"
 
 	"net/http"
@@ -164,7 +166,14 @@ var RootCmd = &cobra.Command{
 			log.Infof("Listen %s", viper.GetString("listen"))
 			log.Fatal(http.ListenAndServe(viper.GetString("listen"), nil))
 		} else {
-			select {}
+
+			quit := make(chan os.Signal, 2)
+
+			signal.Notify(quit, syscall.SIGTERM)
+			signal.Notify(quit, syscall.SIGINT)
+
+			<-quit
+
 		}
 	},
 }
