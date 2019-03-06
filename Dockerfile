@@ -8,6 +8,4 @@ RUN apt-get update && \
     wget -q https://github.com/ovh/noderig/releases/download/$NODERIG_VERSION/noderig && \
     chmod +x noderig
 
-ADD custom_collectors /collectors
-
 ENTRYPOINT ["/noderig"]
