@@ -3,9 +3,11 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"os/signal"
 	"path"
 	"strconv"
 	"sync"
+	"syscall"
 	"time"
 
 	"net/http"
@@ -38,8 +40,14 @@ func init() {
 	RootCmd.Flags().StringP("collectors", "c", "./collectors", "external collectors directory")
 	RootCmd.Flags().Uint64P("keep-for", "k", 3, "keep collectors data for the given number of fetch")
 
-	viper.BindPFlags(RootCmd.PersistentFlags())
-	viper.BindPFlags(RootCmd.Flags())
+	err := viper.BindPFlags(RootCmd.PersistentFlags())
+	if err != nil {
+		log.WithError(err).Fatal("failed to init command line")
+	}
+	err = viper.BindPFlags(RootCmd.Flags())
+	if err != nil {
+		log.WithError(err).Fatal("failed to init command line")
+	}
 
 	viper.WatchConfig()
 
@@ -109,11 +117,14 @@ var RootCmd = &cobra.Command{
 			csMutex.Lock()
 			defer csMutex.Unlock()
 			for _, c := range cs {
-				w.Write(c.Metrics().Bytes())
+				_, err := w.Write(c.Metrics().Bytes())
+				if err != nil {
+					log.WithError(err).Error("cannot write metric into file")
+				}
 			}
 		}))
 		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte(`<html>
+			_, err := w.Write([]byte(`<html>
 	             <head><title>Noderig</title></head>
 	             <body>
 	             <h1>Noderig</h1>
@@ -121,7 +132,9 @@ var RootCmd = &cobra.Command{
 	             <p><a href="https://github.com/ovh/noderig">Github</a></p>
 	             </body>
 	             </html>`))
-
+			if err != nil {
+				log.WithError(err).Error("cannot send body to client")
+			}
 		})
 		log.Info("Http started")
 
@@ -129,29 +142,32 @@ var RootCmd = &cobra.Command{
 			flushPath := viper.GetString("flushPath")
 			ticker := time.NewTicker(time.Duration(viper.GetInt("flushPeriod")) * time.Millisecond)
 			go func() {
-				for {
-					select {
-					case <-ticker.C:
-						path := fmt.Sprintf("%v%v", flushPath, time.Now().Unix())
-						log.Debugf("Flush to file: %v%v", path, ".tmp")
-						file, err := os.Create(path + ".tmp")
+				for range ticker.C {
+					path := fmt.Sprintf("%v%v", flushPath, time.Now().Unix())
+					log.Debugf("Flush to file: %v%v", path, ".tmp")
+					file, err := os.Create(path + ".tmp")
+					if err != nil {
+						log.Errorf("Flush failed: %v", err)
+					}
+
+					csMutex.Lock()
+					for _, c := range cs {
+						_, err := file.Write(c.Metrics().Bytes())
 						if err != nil {
-							log.Errorf("Flush failed: %v", err)
+							log.WithError(err).Error("Cannot write metric into file")
 						}
+					}
+					csMutex.Unlock()
 
-						csMutex.Lock()
-						for _, c := range cs {
-							file.Write(c.Metrics().Bytes())
-						}
-						csMutex.Unlock()
+					if err := file.Close(); err != nil {
+						log.WithError(err).Error("Cannot close flush file")
+					}
 
-						if err := file.Close(); err != nil {
-							log.WithError(err).Error("Cannot close flush file")
-						}
-
-						// Move tmp file to metrics one
-						log.Debugf("Move to file: %v%v", path, ".metrics")
-						os.Rename(path+".tmp", path+".metrics")
+					// Move tmp file to metrics one
+					log.Debugf("Move to file: %v%v", path, ".metrics")
+					err = os.Rename(path+".tmp", path+".metrics")
+					if err != nil {
+						log.WithError(err).Error("Cannot rotate metrics file")
 					}
 				}
 			}()
@@ -164,7 +180,14 @@ var RootCmd = &cobra.Command{
 			log.Infof("Listen %s", viper.GetString("listen"))
 			log.Fatal(http.ListenAndServe(viper.GetString("listen"), nil))
 		} else {
-			select {}
+
+			quit := make(chan os.Signal, 2)
+
+			signal.Notify(quit, syscall.SIGTERM)
+			signal.Notify(quit, syscall.SIGINT)
+
+			<-quit
+
 		}
 	},
 }

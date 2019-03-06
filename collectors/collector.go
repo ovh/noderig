@@ -15,13 +15,10 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/shirou/gopsutil/cpu"
 )
 
 // Collector collects external metrics
 type Collector struct {
-	times []cpu.TimesStat
-
 	mutex     sync.RWMutex
 	sensision bytes.Buffer
 	fetched   []bytes.Buffer
@@ -35,9 +32,9 @@ func NewCollector(path string, period uint, keep uint) *Collector {
 		fetched: make([]bytes.Buffer, keep),
 	}
 
-	tick := time.Tick(time.Duration(period) * time.Millisecond)
+	tick := time.NewTicker(time.Duration(period) * time.Millisecond)
 	go func() {
-		for range tick {
+		for range tick.C {
 			if err := c.scrape(); err != nil {
 				log.Error(err)
 			}
@@ -189,16 +186,14 @@ func (c *Collector) scrape() (cmdError error) {
 				}
 			}
 			dp.Value = val
-		} else {
-			if err := json.Unmarshal([]byte(t), &dp); err != nil {
-				// Maybe meta json
-				var m metasend
-				if err := json.Unmarshal([]byte(t), &m); err == nil {
-					continue // skip metadata
-				}
-				log.Warnf("%v: invalid data point - %v", c.path, t)
-				continue
+		} else if err := json.Unmarshal([]byte(t), &dp); err != nil {
+			// Maybe meta json
+			var m metasend
+			if err := json.Unmarshal([]byte(t), &m); err == nil {
+				continue // skip metadata
 			}
+			log.Warnf("%v: invalid data point - %v", c.path, t)
+			continue
 		}
 
 		// add metric
@@ -210,11 +205,11 @@ func (c *Collector) scrape() (cmdError error) {
 
 		c.mutex.Lock()
 		gts := fmt.Sprintf("%v000000// %v{%v} ", dp.Timestamp, dp.Metric, labels)
-		switch dp.Value.(type) {
+		switch v := dp.Value.(type) {
+		case string:
+			gts += fmt.Sprintf("'%v'\n", url.PathEscape(v))
 		default:
 			gts += fmt.Sprintf("%v\n", dp.Value)
-		case string:
-			gts += fmt.Sprintf("'%v'\n", url.PathEscape(dp.Value.(string)))
 		}
 		c.sensision.WriteString(gts)
 		c.mutex.Unlock()
@@ -228,7 +223,7 @@ func (c *Collector) scrape() (cmdError error) {
 
 func (c *Collector) sanitize(v string) string {
 	s := strings.TrimSpace(v)
-	s = strings.Replace(v, ",", "%2C", -1)
+	s = strings.Replace(s, ",", "%2C", -1)
 	s = strings.Replace(s, "}", "%7D", -1)
 	return strings.Replace(s, "=", "%3D", -1)
 }
