@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/shirou/gopsutil/disk"
+	log "github.com/sirupsen/logrus"
 )
 
 // Disk collects disk related metrics
@@ -45,9 +45,9 @@ func NewDisk(period uint, level uint8, opts interface{}) *Disk {
 	}
 
 	if level > 0 {
-		tick := time.Tick(time.Duration(period) * time.Millisecond)
+		tick := time.NewTicker(time.Duration(period) * time.Millisecond)
 		go func() {
-			for range tick {
+			for range tick.C {
 				if err := c.scrape(); err != nil {
 					log.Error(err)
 				}

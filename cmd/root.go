@@ -3,12 +3,16 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"os/signal"
 	"path"
 	"strconv"
+	"sync"
+	"syscall"
 	"time"
 
 	"net/http"
 
+	"github.com/fsnotify/fsnotify"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -16,6 +20,9 @@ import (
 	"github.com/ovh/noderig/collectors"
 	"github.com/ovh/noderig/core"
 )
+
+var cs []core.Collector
+var csMutex = sync.Mutex{}
 
 // Aggregator init - define command line arguments.
 func init() {
@@ -33,8 +40,26 @@ func init() {
 	RootCmd.Flags().StringP("collectors", "c", "./collectors", "external collectors directory")
 	RootCmd.Flags().Uint64P("keep-for", "k", 3, "keep collectors data for the given number of fetch")
 
-	viper.BindPFlags(RootCmd.PersistentFlags())
-	viper.BindPFlags(RootCmd.Flags())
+	err := viper.BindPFlags(RootCmd.PersistentFlags())
+	if err != nil {
+		log.WithError(err).Fatal("failed to init command line")
+	}
+	err = viper.BindPFlags(RootCmd.Flags())
+	if err != nil {
+		log.WithError(err).Fatal("failed to init command line")
+	}
+
+	viper.WatchConfig()
+
+	viper.OnConfigChange(func(e fsnotify.Event) {
+		log.Info("Config file changed, reload...")
+
+		csMutex.Lock()
+		defer csMutex.Unlock()
+		cs = getCollectors()
+
+		log.Infof("Reloaded - %d", len(cs))
+	})
 }
 
 // Load config - initialize defaults and read config.
@@ -83,77 +108,23 @@ var RootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Info("Noderig starting")
 
-		// Build collectors
-		var cs []core.Collector
-
-		cpu := collectors.NewCPU(uint(viper.GetInt("period")), uint8(viper.GetInt("cpu")), viper.GetStringSlice("cpu-mods"))
-		cs = append(cs, cpu)
-
-		mem := collectors.NewMemory(uint(viper.GetInt("period")), uint8(viper.GetInt("mem")))
-		cs = append(cs, mem)
-
-		load := collectors.NewLoad(uint(viper.GetInt("period")), uint8(viper.GetInt("load")))
-		cs = append(cs, load)
-
-		net := collectors.NewNet(uint(viper.GetInt("period")), uint8(viper.GetInt("net")), viper.Get("net-opts"))
-		cs = append(cs, net)
-
-		disk := collectors.NewDisk(uint(viper.GetInt("period")), uint8(viper.GetInt("disk")), viper.Get("disk-opts"))
-		cs = append(cs, disk)
-
-		// Load external collectors
-		cpath := viper.GetString("collectors")
-		cdir, err := os.Open(cpath)
-		if err == nil {
-			idirs, err := cdir.Readdir(0)
-			if err != nil {
-				log.Error(err)
-				return
-			}
-			for _, idir := range idirs {
-				idirname := idir.Name()
-				i, err := strconv.Atoi(idirname)
-				if err != nil {
-					if idirname != "etc" && idirname != "lib" {
-						log.Warn("Bad collector folder: ", idirname)
-					}
-					continue
-				}
-
-				interval := i * 1000
-				if i <= 0 {
-					interval = viper.GetInt("period")
-				}
-
-				dir, err := os.Open(path.Join(cpath, idirname))
-				if err != nil {
-					log.Error(err)
-					continue
-				}
-
-				files, err := dir.Readdir(0)
-				if err != nil {
-					log.Error(err)
-					continue
-				}
-
-				for _, file := range files {
-					disk := collectors.NewCollector(path.Join(dir.Name(), file.Name()), uint(interval), uint(viper.GetInt("keep-for")))
-					cs = append(cs, disk)
-				}
-			}
-		}
+		cs = getCollectors()
 
 		log.Infof("Noderig started - %v", len(cs))
 
 		// Setup http
 		http.Handle("/metrics", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+			csMutex.Lock()
+			defer csMutex.Unlock()
 			for _, c := range cs {
-				w.Write(c.Metrics().Bytes())
+				_, err := w.Write(c.Metrics().Bytes())
+				if err != nil {
+					log.WithError(err).Error("cannot write metric into file")
+				}
 			}
 		}))
 		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte(`<html>
+			_, err := w.Write([]byte(`<html>
 	             <head><title>Noderig</title></head>
 	             <body>
 	             <h1>Noderig</h1>
@@ -161,7 +132,9 @@ var RootCmd = &cobra.Command{
 	             <p><a href="https://github.com/ovh/noderig">Github</a></p>
 	             </body>
 	             </html>`))
-
+			if err != nil {
+				log.WithError(err).Error("cannot send body to client")
+			}
 		})
 		log.Info("Http started")
 
@@ -169,25 +142,32 @@ var RootCmd = &cobra.Command{
 			flushPath := viper.GetString("flushPath")
 			ticker := time.NewTicker(time.Duration(viper.GetInt("flushPeriod")) * time.Millisecond)
 			go func() {
-				for {
-					select {
-					case <-ticker.C:
-						path := fmt.Sprintf("%v%v", flushPath, time.Now().Unix())
-						log.Debugf("Flush to file: %v%v", path, ".tmp")
-						file, err := os.Create(path + ".tmp")
+				for range ticker.C {
+					path := fmt.Sprintf("%v%v", flushPath, time.Now().Unix())
+					log.Debugf("Flush to file: %v%v", path, ".tmp")
+					file, err := os.Create(path + ".tmp")
+					if err != nil {
+						log.Errorf("Flush failed: %v", err)
+					}
+
+					csMutex.Lock()
+					for _, c := range cs {
+						_, err := file.Write(c.Metrics().Bytes())
 						if err != nil {
-							log.Errorf("Flush failed: %v", err)
+							log.WithError(err).Error("Cannot write metric into file")
 						}
+					}
+					csMutex.Unlock()
 
-						for _, c := range cs {
-							file.Write(c.Metrics().Bytes())
-						}
+					if err := file.Close(); err != nil {
+						log.WithError(err).Error("Cannot close flush file")
+					}
 
-						file.Close()
-
-						// Move tmp file to metrics one
-						log.Debugf("Move to file: %v%v", path, ".metrics")
-						os.Rename(path+".tmp", path+".metrics")
+					// Move tmp file to metrics one
+					log.Debugf("Move to file: %v%v", path, ".metrics")
+					err = os.Rename(path+".tmp", path+".metrics")
+					if err != nil {
+						log.WithError(err).Error("Cannot rotate metrics file")
 					}
 				}
 			}()
@@ -200,7 +180,79 @@ var RootCmd = &cobra.Command{
 			log.Infof("Listen %s", viper.GetString("listen"))
 			log.Fatal(http.ListenAndServe(viper.GetString("listen"), nil))
 		} else {
-			select {}
+
+			quit := make(chan os.Signal, 2)
+
+			signal.Notify(quit, syscall.SIGTERM)
+			signal.Notify(quit, syscall.SIGINT)
+
+			<-quit
+
 		}
 	},
+}
+
+func getCollectors() []core.Collector {
+	// Build collectors
+	var cs []core.Collector
+
+	cpu := collectors.NewCPU(uint(viper.GetInt("period")), uint8(viper.GetInt("cpu")), viper.GetStringSlice("cpu-mods"))
+	cs = append(cs, cpu)
+
+	mem := collectors.NewMemory(uint(viper.GetInt("period")), uint8(viper.GetInt("mem")))
+	cs = append(cs, mem)
+
+	load := collectors.NewLoad(uint(viper.GetInt("period")), uint8(viper.GetInt("load")))
+	cs = append(cs, load)
+
+	net := collectors.NewNet(uint(viper.GetInt("period")), uint8(viper.GetInt("net")), viper.Get("net-opts"))
+	cs = append(cs, net)
+
+	disk := collectors.NewDisk(uint(viper.GetInt("period")), uint8(viper.GetInt("disk")), viper.Get("disk-opts"))
+	cs = append(cs, disk)
+
+	// Load external collectors
+	cpath := viper.GetString("collectors")
+	cdir, err := os.Open(cpath)
+	if err == nil {
+		idirs, err := cdir.Readdir(0)
+		if err != nil {
+			log.Error(err)
+			return cs
+		}
+		for _, idir := range idirs {
+			idirname := idir.Name()
+			i, err := strconv.Atoi(idirname)
+			if err != nil {
+				if idirname != "etc" && idirname != "lib" {
+					log.Warn("Bad collector folder: ", idirname)
+				}
+				continue
+			}
+
+			interval := i * 1000
+			if i <= 0 {
+				interval = viper.GetInt("period")
+			}
+
+			dir, err := os.Open(path.Join(cpath, idirname))
+			if err != nil {
+				log.Error(err)
+				continue
+			}
+
+			files, err := dir.Readdir(0)
+			if err != nil {
+				log.Error(err)
+				continue
+			}
+
+			for _, file := range files {
+				disk := collectors.NewCollector(path.Join(dir.Name(), file.Name()), uint(interval), uint(viper.GetInt("keep-for")))
+				cs = append(cs, disk)
+			}
+		}
+	}
+
+	return cs
 }

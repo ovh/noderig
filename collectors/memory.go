@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/shirou/gopsutil/mem"
+	log "github.com/sirupsen/logrus"
 )
 
 // Memory collects memory related metrics
@@ -27,9 +27,9 @@ func NewMemory(period uint, level uint8) *Memory {
 		return c
 	}
 
-	tick := time.Tick(time.Duration(period) * time.Millisecond)
+	tick := time.NewTicker(time.Duration(period) * time.Millisecond)
 	go func() {
-		for range tick {
+		for range tick.C {
 			if err := c.scrape(); err != nil {
 				log.Error(err)
 			}
