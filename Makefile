@@ -9,6 +9,8 @@ CROSS=GOOS=linux GOARCH=amd64
 rwildcard=$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst *,%,$2),$d))
 VPATH= $(BUILD_DIR)
 
+LINT_PATHS= ./cmd/... ./collectors/... ./core/... ./
+
 .SECONDEXPANSION:
 
 build: noderig.go $$(call rwildcard, ./cmd, *.go) $$(call rwildcard, ./collectors, *.go)
@@ -24,17 +26,16 @@ dist: noderig.go $$(call rwildcard, ./cmd, *.go) $$(call rwildcard, ./collectors
 
 .PHONY: lint
 lint:
-	@command -v gometalinter >/dev/null 2>&1 || { echo >&2 "gometalinter is required but not available please follow instructions from https://github.com/alecthomas/gometalinter"; exit 1; }
-	gometalinter --deadline=180s --disable-all --enable=gofmt ./cmd/... ./core/... ./
-	gometalinter --deadline=180s --disable-all --enable=vet ./cmd/... ./core/... ./
-	gometalinter --deadline=180s --disable-all --enable=golint ./cmd/... ./core/... ./
-	gometalinter --deadline=180s --disable-all --enable=ineffassign ./cmd/... ./core/... ./
-	gometalinter --deadline=180s --disable-all --enable=misspell ./cmd/... ./core/... ./
-	gometalinter --deadline=180s --disable-all --enable=staticcheck ./cmd/... ./core/... ./
+	$(GOPATH)/bin/golangci-lint run --enable-all \
+		--disable gochecknoinits \
+		--disable gochecknoglobals \
+		--disable scopelint \
+		--disable goimports \
+		$(LINT_PATHS)
 
 .PHONY: format
 format:
-	gofmt -w -s ./cmd ./core noderig.go
+	gofmt -w -s ./cmd ./core ./collectors noderig.go
 
 .PHONY: dev
 dev: format lint build

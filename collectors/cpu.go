@@ -7,9 +7,9 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/host"
+	log "github.com/sirupsen/logrus"
 )
 
 // CPU collects cpu related metrics
@@ -33,9 +33,9 @@ func NewCPU(period uint, level uint8, modules []string) *CPU {
 		return c
 	}
 
-	tick := time.Tick(time.Duration(period) * time.Millisecond)
+	tick := time.NewTicker(time.Duration(period) * time.Millisecond)
 	go func() {
-		for range tick {
+		for range tick.C {
 			if err := c.scrape(); err != nil {
 				log.Error(err)
 			}

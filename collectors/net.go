@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/shirou/gopsutil/net"
+	log "github.com/sirupsen/logrus"
 )
 
 // Net collects network related metrics
@@ -49,9 +49,9 @@ func NewNet(period uint, level uint8, opts interface{}) *Net {
 		return c
 	}
 
-	tick := time.Tick(time.Duration(period) * time.Millisecond)
+	tick := time.NewTicker(time.Duration(period) * time.Millisecond)
 	go func() {
-		for range tick {
+		for range tick.C {
 			if err := c.scrape(); err != nil {
 				log.Error(err)
 			}
@@ -87,8 +87,8 @@ func (c *Net) scrape() error {
 		in += cnt.BytesRecv
 		out += cnt.BytesSent
 	}
-	in = in / uint64(c.period/1000)
-	out = out / uint64(c.period/1000)
+	in /= uint64(c.period / 1000)
+	out /= uint64(c.period / 1000)
 
 	// protect consistency
 	c.mutex.Lock()
