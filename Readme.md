@@ -119,6 +119,44 @@ Noderig have some built-in collectors.
 <tr><td>os.net.dropped{direction=out,iface=eth0}</td><td>iface out drop count (drops)</td></tr>
 </table>
 
+### Custom
+
+With Noderig you can define set-up custom collectors as defined in http://bosun.org/scollector/external-collectors. 
+To be enable you need to define a collectors folder using the noderig parameter "collectors". 
+This fold need to have a strict arborescence: a number folder and then the exectutable collectors.
+
+For example to define a script shell collectors reach the noderig collectors file:
+
+```sh
+cd ~/collectors
+mkdir 10
+``
+
+Then inside the 10 folder write the following executable `test.sh` shell script.
+
+```sh
+#!/bin/sh
+
+now=$(date +%s)
+
+echo my.metric $now 42
+```
+
+And execute noderig:
+
+```sh
+./build/noderig --collectors ~/collectors
+```
+
+To conclude you can tun noderig custom collectors with the following configuration parameters:
+
+```yaml
+keep-metrics: true # To always keep in Noderig the last metrics values
+keep-for: 3 # Keep-for returned the number values to keep
+```
+
+The `keep-for` parameter with `keep-metrics` at true keep the last N values otherwise it keep each values for n calls to the noderig metrics endpoint.
+
 ## Configuration
 
 Noderig can read a simple default [config file](config.yaml).
@@ -138,6 +176,7 @@ Config is composed of three main parts and some config fields:
 
 Noderig have some built-in collectors. They could be configured by a log level.
 You can also defined custom collectors, in an scollector way. (see: http://bosun.org/scollector/external-collectors)
+To configure a custom collectors in noderig reach [custom collectors](https://github.com/ovh/noderig#custom).
 
 ```yaml
 cpu: 1  # CPU collector level     (Optional, default: 1)
