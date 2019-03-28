@@ -26,7 +26,7 @@ dist: noderig.go $$(call rwildcard, ./cmd, *.go) $$(call rwildcard, ./collectors
 
 .PHONY: lint
 lint:
-	$(GOPATH)/bin/golangci-lint run --enable-all \
+	$(go env GOPATH)/bin/golangci-lint run --enable-all \
 		--disable gochecknoinits \
 		--disable gochecknoglobals \
 		--disable scopelint \
@@ -48,7 +48,11 @@ clean:
 
 build-docker: build-go-in-docker build-docker-image
 
-glide-install:
+# retro-compat
+glide-install: deps
+
+deps:
+	go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
 	go get github.com/Masterminds/glide
 	glide install
 
@@ -61,7 +65,7 @@ build-go-in-docker:
 		-v ${PWD}:/go/src/github.com/ovh/noderig \
 		-w /go/src/github.com/ovh/noderig \
 		golang:1.8.0 \
-			make glide-install go-build-in-docker
+			make deps go-build-in-docker
 
 build-docker-image:
 	docker build -t ovh/noderig .
