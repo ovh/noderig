@@ -13,6 +13,11 @@ LINT_PATHS= ./cmd/... ./collectors/... ./core/... ./
 
 .SECONDEXPANSION:
 
+.PHONY: init
+init:
+	curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+	go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
+
 build: noderig.go $$(call rwildcard, ./cmd, *.go) $$(call rwildcard, ./collectors, *.go)
 	$(CC) $(DFLAGS) -ldflags "$(CFLAGS)" -o $(BUILD_DIR)/noderig noderig.go
 
