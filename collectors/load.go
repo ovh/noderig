@@ -2,10 +2,10 @@ package collectors
 
 import (
 	"bytes"
-	"fmt"
 	"sync"
 	"time"
 
+	"github.com/ovh/noderig/core"
 	"github.com/shirou/gopsutil/load"
 	log "github.com/sirupsen/logrus"
 )
@@ -62,16 +62,18 @@ func (c *Load) scrape() error {
 	// Delete previous metrics
 	c.sensision.Reset()
 
-	now := fmt.Sprintf("%v//", time.Now().UnixNano()/1000)
+	class := "os.load"
 
-	gts := fmt.Sprintf("%v os.load1{} %v\n", now, avg.Load1)
+	now := time.Now().UnixNano() / 1000
+
+	gts := core.GetSeriesOutput(now, class+"1", "{}", avg.Load1)
 	c.sensision.WriteString(gts)
 
 	if c.level > 1 {
-		gts := fmt.Sprintf("%v os.load5{} %v\n", now, avg.Load5)
+		gts := core.GetSeriesOutput(now, class+"5", "{}", avg.Load5)
 		c.sensision.WriteString(gts)
 
-		gts = fmt.Sprintf("%v os.load15{} %v\n", now, avg.Load15)
+		gts = core.GetSeriesOutput(now, class+"15", "{}", avg.Load15)
 		c.sensision.WriteString(gts)
 	}
 

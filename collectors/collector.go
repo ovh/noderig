@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"net/url"
 	"os/exec"
 	"regexp"
 	"strconv"
@@ -14,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ovh/noderig/core"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -199,18 +199,13 @@ func (c *Collector) scrape() (cmdError error) {
 		// add metric
 		var labels string
 		for k, v := range dp.Tags {
-			labels += k + "=" + v + ","
+			labels += core.ToLabels(k, v) + ","
 		}
 		labels = strings.TrimSuffix(labels, ",")
 
 		c.mutex.Lock()
-		gts := fmt.Sprintf("%v000000// %v{%v} ", dp.Timestamp, dp.Metric, labels)
-		switch v := dp.Value.(type) {
-		case string:
-			gts += fmt.Sprintf("'%v'\n", url.PathEscape(v))
-		default:
-			gts += fmt.Sprintf("%v\n", dp.Value)
-		}
+
+		gts := core.GetSeriesOutput(dp.Timestamp*1000000, dp.Metric, fmt.Sprintf("{%v}", labels), dp.Value)
 		c.sensision.WriteString(gts)
 		c.mutex.Unlock()
 	}
