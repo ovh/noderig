@@ -8,3 +8,7 @@ disk-opts:
     - sda1
 #flushPath: /tmp/noderig
 #listen: none
+
+# To keep always the last value of a custom collector you can set:
+#keep-metrics: true
+#keep-for: 1

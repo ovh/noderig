@@ -72,6 +72,7 @@ func initConfig() {
 
 	// Defaults
 	viper.SetDefault("flushPeriod", 10000)
+	viper.SetDefault("keep-metrics", false)
 
 	// Bind environment variables
 	viper.SetEnvPrefix("noderig")
@@ -266,7 +267,11 @@ func getCollectors() []core.Collector {
 			}
 
 			for _, file := range files {
-				disk := collectors.NewCollector(path.Join(dir.Name(), file.Name()), uint(interval), uint(viper.GetInt("keep-for")))
+				disk := collectors.NewCollector(
+					path.Join(dir.Name(), file.Name()),
+					uint(interval),
+					uint(viper.GetInt("keep-for")),
+					viper.GetBool("keep-metrics"))
 				cs = append(cs, disk)
 			}
 		}

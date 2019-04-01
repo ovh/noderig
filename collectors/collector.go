@@ -19,17 +19,19 @@ import (
 
 // Collector collects external metrics
 type Collector struct {
-	mutex     sync.RWMutex
-	sensision bytes.Buffer
-	fetched   []bytes.Buffer
-	path      string
+	mutex       sync.RWMutex
+	sensision   bytes.Buffer
+	fetched     []bytes.Buffer
+	keepMetrics bool
+	path        string
 }
 
 // NewCollector returns an initialized external collector.
-func NewCollector(path string, period uint, keep uint) *Collector {
+func NewCollector(path string, period uint, keep uint, keepMetrics bool) *Collector {
 	c := &Collector{
-		path:    path,
-		fetched: make([]bytes.Buffer, keep),
+		path:        path,
+		fetched:     make([]bytes.Buffer, keep),
+		keepMetrics: keepMetrics,
 	}
 
 	tick := time.NewTicker(time.Duration(period) * time.Millisecond)
@@ -53,12 +55,19 @@ func (c *Collector) Metrics() *bytes.Buffer {
 	top.Grow(c.sensision.Len())
 	top.Write(c.sensision.Bytes())
 
-	for i := len(c.fetched) - 1; i > 0; i-- {
-		c.fetched[i] = c.fetched[i-1]
+	scollectorCompat := true
+	if c.keepMetrics {
+		scollectorCompat = len(top.Bytes()) > 0
 	}
-	c.fetched[0] = top
 
-	c.sensision.Reset()
+	if scollectorCompat {
+		for i := len(c.fetched) - 1; i > 0; i-- {
+			c.fetched[i] = c.fetched[i-1]
+		}
+		c.fetched[0] = top
+
+		c.sensision.Reset()
+	}
 
 	var res bytes.Buffer
 	for i := 0; i < len(c.fetched); i++ {
