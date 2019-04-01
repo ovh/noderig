@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ovh/noderig/core"
 	"github.com/shirou/gopsutil/net"
 	log "github.com/sirupsen/logrus"
 )
@@ -96,13 +97,14 @@ func (c *Net) scrape() error {
 
 	c.sensision.Reset()
 
-	now := fmt.Sprintf("%v//", time.Now().UnixNano()/1000)
+	class := "os.net.bytes"
+	now := time.Now().UnixNano() / 1000
 
 	if c.level == 1 {
-		gts := fmt.Sprintf("%v os.net.bytes{direction=in} %v\n", now, in)
+		gts := core.GetSeriesOutput(now, class, fmt.Sprintf("{%v}", core.ToLabels("direction", "in")), in)
 		c.sensision.WriteString(gts)
 
-		gts = fmt.Sprintf("%v os.net.bytes{direction=out} %v\n", now, out)
+		gts = core.GetSeriesOutput(now, class, fmt.Sprintf("{%v}", core.ToLabels("direction", "out")), out)
 		c.sensision.WriteString(gts)
 	}
 
@@ -113,10 +115,13 @@ func (c *Net) scrape() error {
 			} else if c.interfaces != nil && !stringInSlice(cnt.Name, c.interfaces) {
 				continue
 			}
-			gts := fmt.Sprintf("%v os.net.bytes{iface=%v,direction=in} %v\n", now, cnt.Name, cnt.BytesRecv)
+
+			gts := core.GetSeriesOutput(now, class,
+				fmt.Sprintf("{%v,%v}", core.ToLabels("iface", cnt.Name), core.ToLabels("direction", "in")), cnt.BytesRecv)
 			c.sensision.WriteString(gts)
 
-			gts = fmt.Sprintf("%v os.net.bytes{iface=%v,direction=out} %v\n", now, cnt.Name, cnt.BytesSent)
+			gts = core.GetSeriesOutput(now, class,
+				fmt.Sprintf("{%v,%v}", core.ToLabels("iface", cnt.Name), core.ToLabels("direction", "out")), cnt.BytesSent)
 			c.sensision.WriteString(gts)
 		}
 	}
@@ -128,22 +133,29 @@ func (c *Net) scrape() error {
 			} else if c.interfaces != nil && !stringInSlice(cnt.Name, c.interfaces) {
 				continue
 			}
-			gts := fmt.Sprintf("%v os.net.packets{iface=%v,direction=in} %v\n", now, cnt.Name, cnt.PacketsRecv)
+
+			gts := core.GetSeriesOutput(now, "os.net.packets",
+				fmt.Sprintf("{%v,%v}", core.ToLabels("iface", cnt.Name), core.ToLabels("direction", "in")), cnt.PacketsRecv)
 			c.sensision.WriteString(gts)
 
-			gts = fmt.Sprintf("%v os.net.packets{iface=%v,direction=out} %v\n", now, cnt.Name, cnt.PacketsSent)
+			gts = core.GetSeriesOutput(now, "os.net.packets",
+				fmt.Sprintf("{%v,%v}", core.ToLabels("iface", cnt.Name), core.ToLabels("direction", "out")), cnt.PacketsSent)
 			c.sensision.WriteString(gts)
 
-			gts = fmt.Sprintf("%v os.net.errs{iface=%v,direction=in} %v\n", now, cnt.Name, cnt.Errin)
+			gts = core.GetSeriesOutput(now, "os.net.errs",
+				fmt.Sprintf("{%v,%v}", core.ToLabels("iface", cnt.Name), core.ToLabels("direction", "in")), cnt.Errin)
 			c.sensision.WriteString(gts)
 
-			gts = fmt.Sprintf("%v os.net.errs{iface=%v,direction=out} %v\n", now, cnt.Name, cnt.Errout)
+			gts = core.GetSeriesOutput(now, "os.net.errs",
+				fmt.Sprintf("{%v,%v}", core.ToLabels("iface", cnt.Name), core.ToLabels("direction", "out")), cnt.Errout)
 			c.sensision.WriteString(gts)
 
-			gts = fmt.Sprintf("%v os.net.dropped{iface=%v,direction=in} %v\n", now, cnt.Name, cnt.Dropin)
+			gts = core.GetSeriesOutput(now, "os.net.dropped",
+				fmt.Sprintf("{%v,%v}", core.ToLabels("iface", cnt.Name), core.ToLabels("direction", "in")), cnt.Dropin)
 			c.sensision.WriteString(gts)
 
-			gts = fmt.Sprintf("%v os.net.dropped{iface=%v,direction=out} %v\n", now, cnt.Name, cnt.Dropout)
+			gts = core.GetSeriesOutput(now, "os.net.dropped",
+				fmt.Sprintf("{%v,%v}", core.ToLabels("iface", cnt.Name), core.ToLabels("direction", "out")), cnt.Dropout)
 			c.sensision.WriteString(gts)
 		}
 	}

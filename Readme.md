@@ -236,6 +236,15 @@ collectors: /opt/noderig # Custom collectors directory                          
 1484828197570759// os.disk.fs{disk=/dev/sda1} 4.967614357908193
 ```
 
+## Prometheus output format
+
+To use Noderig and expose a Prometheus native format, just set the following two configuration lines in the config file:
+
+```yaml
+format: "prometheus"  # Expose a Prometheus format in Noderig as: https://prometheus.io/docs/instrumenting/exposition_formats/
+separator: "_"        # Metrics classnames separator, '_' is the default one for Prom, but you can use any other supported by your storage backend
+```
+
 ## Contributing
 
 Instructions on how to contribute to Noderig are available on the [Contributing] page.

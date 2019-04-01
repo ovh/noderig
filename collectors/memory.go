@@ -2,10 +2,10 @@ package collectors
 
 import (
 	"bytes"
-	"fmt"
 	"sync"
 	"time"
 
+	"github.com/ovh/noderig/core"
 	"github.com/shirou/gopsutil/mem"
 	log "github.com/sirupsen/logrus"
 )
@@ -67,22 +67,25 @@ func (c *Memory) scrape() error {
 	// Delete previous metrics
 	c.sensision.Reset()
 
-	now := fmt.Sprintf("%v//", time.Now().UnixNano()/1000)
+	memClass := "os.mem"
+	swapClass := "os.swap"
 
-	gts := fmt.Sprintf("%v os.mem{} %v\n", now, virt.UsedPercent)
+	now := time.Now().UnixNano() / 1000
+
+	gts := core.GetSeriesOutput(now, memClass, "{}", virt.UsedPercent)
 	c.sensision.WriteString(gts)
 
-	gts = fmt.Sprintf("%v os.swap{} %v\n", now, swap.UsedPercent)
+	gts = core.GetSeriesOutput(now, swapClass, "{}", swap.UsedPercent)
 	c.sensision.WriteString(gts)
 
 	if c.level > 1 {
-		gts := fmt.Sprintf("%v os.mem.used{} %v\n", now, virt.Used)
+		gts := core.GetSeriesOutput(now, memClass+".used", "{}", virt.Used)
 		c.sensision.WriteString(gts)
-		gts = fmt.Sprintf("%v os.mem.total{} %v\n", now, virt.Total)
+		gts = core.GetSeriesOutput(now, memClass+".total", "{}", virt.Total)
 		c.sensision.WriteString(gts)
-		gts = fmt.Sprintf("%v os.swap.used{} %v\n", now, swap.Used)
+		gts = core.GetSeriesOutput(now, swapClass+".used", "{}", swap.Used)
 		c.sensision.WriteString(gts)
-		gts = fmt.Sprintf("%v os.swap.total{} %v\n", now, swap.Total)
+		gts = core.GetSeriesOutput(now, swapClass+".total", "{}", swap.Total)
 		c.sensision.WriteString(gts)
 	}
 

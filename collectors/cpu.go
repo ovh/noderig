@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ovh/noderig/core"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/host"
 	log "github.com/sirupsen/logrus"
@@ -98,9 +99,10 @@ func (c *CPU) scrape() error {
 	// Delete previous metrics
 	c.sensision.Reset()
 
-	class := fmt.Sprintf("%v// os.cpu", time.Now().UnixNano()/1000)
+	class := "os.cpu"
 
-	gts := fmt.Sprintf("%v{} %v\n", class, global)
+	now := time.Now().UnixNano() / 1000
+	gts := core.GetSeriesOutput(now, class, "{}", global)
 	c.sensision.WriteString(gts)
 
 	if c.level == 2 {
@@ -109,7 +111,7 @@ func (c *CPU) scrape() error {
 			iowait += v
 		}
 		iowait = iowait / float64(len(iowaits)) * 100
-		gts := fmt.Sprintf("%v.iowait{} %v\n", class, iowait)
+		gts := core.GetSeriesOutput(now, class+".iowait", "{}", iowait)
 		c.sensision.WriteString(gts)
 
 		user := 0.0
@@ -117,7 +119,7 @@ func (c *CPU) scrape() error {
 			user += v
 		}
 		user = user / float64(len(users)) * 100
-		gts = fmt.Sprintf("%v.user{} %v\n", class, user)
+		gts = core.GetSeriesOutput(now, class+".user", "{}", user)
 		c.sensision.WriteString(gts)
 
 		system := 0.0
@@ -125,7 +127,7 @@ func (c *CPU) scrape() error {
 			system += v
 		}
 		system = system / float64(len(systems)) * 100
-		gts = fmt.Sprintf("%v.systems{} %v\n", class, system)
+		gts = core.GetSeriesOutput(now, class+".systems", "{}", system)
 		c.sensision.WriteString(gts)
 
 		nice := 0.0
@@ -133,7 +135,7 @@ func (c *CPU) scrape() error {
 			nice += v
 		}
 		nice = nice / float64(len(nices)) * 100
-		gts = fmt.Sprintf("%v.nice{} %v\n", class, nice)
+		gts = core.GetSeriesOutput(now, class+".nice", "{}", nice)
 		c.sensision.WriteString(gts)
 
 		irq := 0.0
@@ -141,33 +143,39 @@ func (c *CPU) scrape() error {
 			irq += v
 		}
 		irq = irq / float64(len(irqs)) * 100
-		gts = fmt.Sprintf("%v.irq{} %v\n", class, irq)
+		gts = core.GetSeriesOutput(now, class+".irq", "{}", irq)
 		c.sensision.WriteString(gts)
 	}
 
 	if c.level == 3 {
 		for i, v := range iowaits {
-			gts := fmt.Sprintf("%v.iowait{chore=%v} %v\n", class, i, v*100)
+			gts := core.GetSeriesOutput(now,
+				fmt.Sprintf("%v.iowait", class),
+				fmt.Sprintf("{%v}", core.ToLabels("chore", i)), v*100)
 			c.sensision.WriteString(gts)
 		}
 
 		for i, v := range users {
-			gts := fmt.Sprintf("%v.user{chore=%v} %v\n", class, i, v*100)
+			gts := core.GetSeriesOutput(now, fmt.Sprintf("%v.user", class),
+				fmt.Sprintf("{%v}", core.ToLabels("chore", i)), v*100)
 			c.sensision.WriteString(gts)
 		}
 
 		for i, v := range systems {
-			gts := fmt.Sprintf("%v.systems{chore=%v} %v\n", class, i, v*100)
+			gts := core.GetSeriesOutput(now, fmt.Sprintf("%v.systems", class),
+				fmt.Sprintf("{%v}", core.ToLabels("chore", i)), v*100)
 			c.sensision.WriteString(gts)
 		}
 
 		for i, v := range nices {
-			gts := fmt.Sprintf("%v.nice{chore=%v} %v\n", class, i, v*100)
+			gts := core.GetSeriesOutput(now, fmt.Sprintf("%v.nice", class),
+				fmt.Sprintf("{%v}", core.ToLabels("chore", i)), v*100)
 			c.sensision.WriteString(gts)
 		}
 
 		for i, v := range irqs {
-			gts := fmt.Sprintf("%v.irq{chore=%v} %v\n", class, i, v*100)
+			gts := core.GetSeriesOutput(now, fmt.Sprintf("%v.irq", class),
+				fmt.Sprintf("{%v}", core.ToLabels("chore", i)), v*100)
 			c.sensision.WriteString(gts)
 		}
 	}
@@ -194,10 +202,9 @@ func (c *CPU) scrape() error {
 			for _, temp := range temps {
 				submatches := re.FindStringSubmatch(temp.SensorKey)
 				if len(submatches) > 0 {
-					gts = fmt.Sprintf(
-						"%v.temperature{id=%v} %v\n",
-						class, submatches[1], temp.Temperature,
-					)
+
+					gts := core.GetSeriesOutput(now, fmt.Sprintf("%v.temperature", class),
+						fmt.Sprintf("{%v}", core.ToLabels("id", submatches[1])), temp.Temperature)
 					c.sensision.WriteString(gts)
 				}
 			}
@@ -212,10 +219,8 @@ func (c *CPU) scrape() error {
 				for _, temp := range temps {
 					submatches := re.FindStringSubmatch(temp.SensorKey)
 					if len(submatches) > 0 {
-						gts = fmt.Sprintf(
-							"%v.temperature{core=%v} %v\n",
-							class, submatches[1], temp.Temperature,
-						)
+						gts := core.GetSeriesOutput(now, fmt.Sprintf("%v.temperature", class),
+							fmt.Sprintf("{%v}", core.ToLabels("core", submatches[1])), temp.Temperature)
 						c.sensision.WriteString(gts)
 					}
 				}

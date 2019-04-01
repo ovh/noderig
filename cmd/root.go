@@ -39,6 +39,8 @@ func init() {
 	RootCmd.Flags().Uint64("period", 1000, "default collection period")
 	RootCmd.Flags().StringP("collectors", "c", "./collectors", "external collectors directory")
 	RootCmd.Flags().Uint64P("keep-for", "k", 3, "keep collectors data for the given number of fetch")
+	RootCmd.Flags().String("format", "sensition", "the output global format of noderig")
+	RootCmd.Flags().String("separator", ".", "the class separator string")
 
 	err := viper.BindPFlags(RootCmd.PersistentFlags())
 	if err != nil {
@@ -97,6 +99,22 @@ func initConfig() {
 			} else {
 				log.Panicf("Fatal error in config file: %v \n", err)
 			}
+		}
+	}
+
+	if viper.IsSet("format") {
+		format := viper.GetString("format")
+
+		if format != "sensition" {
+			core.Format = format
+		}
+	}
+
+	if viper.IsSet("separator") {
+		separator := viper.GetString("separator")
+
+		if separator != "separator" {
+			core.Separator = separator
 		}
 	}
 }

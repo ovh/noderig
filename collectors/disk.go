@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ovh/noderig/core"
 	"github.com/shirou/gopsutil/disk"
 	log "github.com/sirupsen/logrus"
 )
@@ -97,7 +98,8 @@ func (c *Disk) scrape() error {
 
 	c.sensision.Reset()
 
-	now := fmt.Sprintf("%v// os.disk.fs", time.Now().UnixNano()/1000)
+	now := time.Now().UnixNano() / 1000
+	class := "os.disk.fs"
 
 	for diskPath, usage := range dev {
 		if len(c.allowedDisks) > 0 {
@@ -107,7 +109,9 @@ func (c *Disk) scrape() error {
 				continue
 			}
 		}
-		gts := fmt.Sprintf("%v{disk=%v}{mount=%v} %v\n", now, diskPath, usage.Path, usage.UsedPercent)
+
+		gts := core.GetSeriesOutputAttributes(now, class,
+			fmt.Sprintf("{%v}", core.ToLabels("disk", diskPath)), fmt.Sprintf("{mount=%v}", usage.Path), usage.UsedPercent)
 		c.sensision.WriteString(gts)
 	}
 
@@ -121,13 +125,20 @@ func (c *Disk) scrape() error {
 				}
 			}
 
-			gts := fmt.Sprintf("%v.used{disk=%v}{mount=%v} %v\n", now, diskPath, usage.Path, usage.Used)
+			gts := core.GetSeriesOutputAttributes(now, class+".used",
+				fmt.Sprintf("{%v}", core.ToLabels("disk", diskPath)), fmt.Sprintf("{mount=%v}", usage.Path), usage.Used)
 			c.sensision.WriteString(gts)
-			gts = fmt.Sprintf("%v.total{disk=%v}{mount=%v} %v\n", now, diskPath, usage.Path, usage.Total)
+			gts = core.GetSeriesOutputAttributes(now, class+".total",
+				fmt.Sprintf("{%v}", core.ToLabels("disk", diskPath)),
+				fmt.Sprintf("{mount=%v}", usage.Path), usage.Total)
 			c.sensision.WriteString(gts)
-			gts = fmt.Sprintf("%v.inodes.used{disk=%v}{mount=%v} %v\n", now, diskPath, usage.Path, usage.InodesUsed)
+			gts = core.GetSeriesOutputAttributes(now, class+".inodes.used",
+				fmt.Sprintf("{%v}", core.ToLabels("disk", diskPath)),
+				fmt.Sprintf("{mount=%v}", usage.Path), usage.InodesUsed)
 			c.sensision.WriteString(gts)
-			gts = fmt.Sprintf("%v.inodes.total{disk=%v}{mount=%v} %v\n", now, diskPath, usage.Path, usage.InodesTotal)
+			gts = core.GetSeriesOutputAttributes(now, class+".inodes.total",
+				fmt.Sprintf("{%v}", core.ToLabels("disk", diskPath)),
+				fmt.Sprintf("{mount=%v}", usage.Path), usage.InodesTotal)
 			c.sensision.WriteString(gts)
 		}
 	}
@@ -140,27 +151,36 @@ func (c *Disk) scrape() error {
 					continue
 				}
 			}
-			gts := fmt.Sprintf("%v.bytes.read{name=%v} %v\n", now, name, stats.ReadBytes)
+			gts := core.GetSeriesOutput(now, class+".bytes.read",
+				fmt.Sprintf("{%v}", core.ToLabels("name", name)), stats.ReadBytes)
 			c.sensision.WriteString(gts)
-			gts = fmt.Sprintf("%v.bytes.write{name=%v} %v\n", now, name, stats.WriteBytes)
+			gts = core.GetSeriesOutput(now, class+".bytes.write",
+				fmt.Sprintf("{%v}", core.ToLabels("name", name)), stats.WriteBytes)
 			c.sensision.WriteString(gts)
 
 			if c.level > 3 {
-				gts = fmt.Sprintf("%v.io.read{name=%v} %v\n", now, name, stats.ReadCount)
+				gts = core.GetSeriesOutput(now, class+".io.read",
+					fmt.Sprintf("{%v}", core.ToLabels("name", name)), stats.ReadCount)
 				c.sensision.WriteString(gts)
-				gts = fmt.Sprintf("%v.io.write{name=%v} %v\n", now, name, stats.WriteCount)
+				gts = core.GetSeriesOutput(now, class+".io.write",
+					fmt.Sprintf("{%v}", core.ToLabels("name", name)), stats.WriteCount)
 				c.sensision.WriteString(gts)
 
 				if c.level > 4 {
-					gts = fmt.Sprintf("%v.io.read.ms{name=%v} %v\n", now, name, stats.ReadTime)
+					gts = core.GetSeriesOutput(now, class+".io.read.ms",
+						fmt.Sprintf("{%v}", core.ToLabels("name", name)), stats.ReadTime)
 					c.sensision.WriteString(gts)
-					gts = fmt.Sprintf("%v.io.write.ms{name=%v} %v\n", now, name, stats.WriteTime)
+					gts = core.GetSeriesOutput(now, class+".io.write.ms",
+						fmt.Sprintf("{%v}", core.ToLabels("name", name)), stats.WriteTime)
 					c.sensision.WriteString(gts)
-					gts = fmt.Sprintf("%v.io{name=%v} %v\n", now, name, stats.IopsInProgress)
+					gts = core.GetSeriesOutput(now, class+".io",
+						fmt.Sprintf("{%v}", core.ToLabels("name", name)), stats.IopsInProgress)
 					c.sensision.WriteString(gts)
-					gts = fmt.Sprintf("%v.io.ms{name=%v} %v\n", now, name, stats.IoTime)
+					gts = core.GetSeriesOutput(now, class+".io.ms",
+						fmt.Sprintf("{%v}", core.ToLabels("name", name)), stats.IoTime)
 					c.sensision.WriteString(gts)
-					gts = fmt.Sprintf("%v.io.weighted.ms{name=%v} %v\n", now, name, stats.WeightedIO)
+					gts = core.GetSeriesOutput(now, class+".io.weighted.ms",
+						fmt.Sprintf("{%v}", core.ToLabels("name", name)), stats.WeightedIO)
 					c.sensision.WriteString(gts)
 				}
 			}
