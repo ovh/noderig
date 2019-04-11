@@ -14,6 +14,9 @@ var (
 
 	// Separator pattern for each classnames
 	Separator = "."
+
+	// DefaultLabels add default labels
+	DefaultLabels = ""
 )
 
 // Collector interface
@@ -32,6 +35,18 @@ func GetSeriesOutputAttributes(tick int64, class string, labels string, attribut
 	if Separator != "." {
 		class = strings.Replace(class, ".", Separator, -1)
 	}
+
+	if DefaultLabels != "" {
+		labels = strings.Replace(labels, "{", "", 1)
+		labels = strings.TrimSpace(labels)
+
+		prefix := ","
+		if strings.HasPrefix(labels, "}") {
+			prefix = ""
+		}
+		labels = "{" + DefaultLabels + prefix + labels
+	}
+
 	switch Format {
 	case "sensition":
 		return toSensitionFormat(tick, class, labels, attributes, value)

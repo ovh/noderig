@@ -6,6 +6,7 @@ import (
 	"os/signal"
 	"path"
 	"strconv"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -116,6 +117,21 @@ func initConfig() {
 
 		if separator != "separator" {
 			core.Separator = separator
+		}
+	}
+
+	if viper.IsSet("labels") {
+		labelsSet := viper.GetStringMapString("labels")
+
+		if len(labelsSet) > 0 {
+
+			labelsSplices := make([]string, 0)
+
+			for key, value := range labelsSet {
+				labelsSplices = append(labelsSplices, core.ToLabels(key, value))
+			}
+
+			core.DefaultLabels = strings.Join(labelsSplices, ",")
 		}
 	}
 }
