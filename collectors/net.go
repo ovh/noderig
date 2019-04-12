@@ -3,6 +3,8 @@ package collectors
 import (
 	"bytes"
 	"fmt"
+	"regexp"
+	"strings"
 	"sync"
 	"time"
 
@@ -168,6 +170,16 @@ func stringInSlice(str string, list []string) bool {
 		if v == str {
 			return true
 		}
+
+		if strings.HasPrefix(strings.TrimSpace(v), "~") {
+
+			matched, _ := regexp.MatchString(strings.Replace(strings.TrimSpace(v), "~", "", 1), str)
+
+			if matched {
+				return true
+			}
+		}
+
 	}
 	return false
 }
