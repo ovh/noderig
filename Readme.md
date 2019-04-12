@@ -168,6 +168,16 @@ Configuration is load and override in the following order:
 - ./config.yaml
 - config filepath from command line
 
+To force default labels to each metrics in Noderig, you can set up a configuration key called `labels`. It expects a label string map as defined below:
+
+```yaml
+labels: { 
+  host: "srv001", 
+  dc: "uk1", 
+  type: "web_server", 
+}
+```
+
 ### Definitions
 
 Config is composed of three main parts and some config fields:
