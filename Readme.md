@@ -217,6 +217,15 @@ net-opts:
     - eth1
 ```
 
+Net-opts, interfaces field support now regular expression to white-list interface based on [golang MatchString](https://golang.org/pkg/regexp/#MatchString) implementation. However to use a regular expression you need to prefix the string value by a `~`. To whitelist all eth interfaces, you can set:
+
+```yaml
+net-opts:
+  interfaces:            # Give a filtering list of interfaces for which you want metrics
+    - ~eth*
+```
+
+
 ```yaml
 disk-opts:
   names:            # Give a filtering list of disks for which you want metrics
