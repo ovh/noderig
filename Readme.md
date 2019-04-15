@@ -1,4 +1,4 @@
-# Noderig - Export OS stats as Sensision Metrics
+# Noderig - Export OS stats as Sensision or Prometheus Metrics
 
 [![Build Status](https://travis-ci.org/ovh/noderig.svg?branch=master)](https://travis-ci.org/ovh/noderig)
 
@@ -168,16 +168,6 @@ Configuration is load and override in the following order:
 - ./config.yaml
 - config filepath from command line
 
-To force default labels to each metrics in Noderig, you can set up a configuration key called `labels`. It expects a label string map as defined below:
-
-```yaml
-labels: { 
-  host: "srv001", 
-  dc: "uk1", 
-  type: "web_server", 
-}
-```
-
 ### Definitions
 
 Config is composed of three main parts and some config fields:
@@ -241,6 +231,16 @@ Noderig can be customized through some parameters.
 period: 1000             # Duration within all the sources should be scraped in ms (Optional, default: 1000)
 listen: none             # Listen address, set to none to disable http endpoint    (Optional, default: 127.0.0.1:9100)
 collectors: /opt/noderig # Custom collectors directory                             (Optional, default: none)
+```
+
+To force default labels to each metrics in Noderig, you can set up a configuration key called `labels`. It expects a label string map as defined below:
+
+```yaml
+labels: { 
+  host: "srv001", 
+  dc: "uk1", 
+  type: "web_server", 
+}
 ```
 
 ## Sample metrics
