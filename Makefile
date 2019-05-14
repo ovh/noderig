@@ -13,6 +13,16 @@ LINT_PATHS= ./cmd/... ./collectors/... ./core/... ./
 
 .SECONDEXPANSION:
 
+install: 
+	curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v1.16.0
+
+init: 
+	dep init
+
+deps:
+	dep ensure -v
+
 build: noderig.go $$(call rwildcard, ./cmd, *.go) $$(call rwildcard, ./collectors, *.go)
 	$(CC) $(DFLAGS) -ldflags "$(CFLAGS)" -o $(BUILD_DIR)/noderig noderig.go
 
@@ -47,10 +57,6 @@ clean:
 # Docker build
 
 build-docker: build-go-in-docker build-docker-image
-
-glide-install:
-	go get github.com/Masterminds/glide
-	glide install
 
 go-build-in-docker:
 	$(CC) -ldflags "$(CFLAGS)" noderig.go
