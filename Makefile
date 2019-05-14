@@ -66,8 +66,8 @@ build-go-in-docker:
 		-e GOBIN=/go/bin/ -e CGO_ENABLED=0 -e GOPATH=/go \
 		-v ${PWD}:/go/src/github.com/ovh/noderig \
 		-w /go/src/github.com/ovh/noderig \
-		golang:1.8.0 \
-			make glide-install go-build-in-docker
+		golang:1.12.0 \
+			make go-build-in-docker
 
 build-docker-image:
 	docker build -t ovh/noderig .

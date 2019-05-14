@@ -1,14 +1,12 @@
 language: go
 go:
-- 1.10.x
-- 1.11.x
 - 1.12.x
-go_import_path: github.com/ovh/noderig
+- master
+env:
+- GO111MODULE=on
 before_install:
-- go get github.com/Masterminds/glide
 - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v1.15.0
 script:
-- glide install
 - make lint
 - make format
 - make dist

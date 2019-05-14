@@ -194,6 +194,7 @@ func (c *CPU) scrape() error {
 			}
 
 			// Get CPU temperature
+			//nolint:misspell
 			re := regexp.MustCompile("^coretemp_packageid([0-9+])_input$")
 			if platform == "darwin" {
 				re = regexp.MustCompile("^TC([0-9+])P$")
