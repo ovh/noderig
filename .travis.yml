@@ -5,10 +5,10 @@ go:
 - 1.12.x
 go_import_path: github.com/ovh/noderig
 before_install:
-- go get github.com/Masterminds/glide
+- curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v1.15.0
 script:
-- glide install
+- make deps
 - make lint
 - make format
 - make dist
