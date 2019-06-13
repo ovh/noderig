@@ -113,7 +113,7 @@ func (c *Collector) scrape() (cmdError error) {
 		ew.Close()
 	}()
 
-	tagPattern := regexp.MustCompile(`^[a-zA-Z0-9-_\.\/]*$`)
+	tagPattern := regexp.MustCompile(`^[a-zA-Z0-9-%_\.\/]*$`)
 
 	// Stderr handler
 	go func() {
