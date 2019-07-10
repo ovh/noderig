@@ -40,7 +40,7 @@ func init() {
 	RootCmd.Flags().Uint64("period", 1000, "default collection period")
 	RootCmd.Flags().StringP("collectors", "c", "./collectors", "external collectors directory")
 	RootCmd.Flags().Uint64P("keep-for", "k", 3, "keep collectors data for the given number of fetch")
-	RootCmd.Flags().String("format", "sensition", "the output global format of noderig")
+	RootCmd.Flags().String("format", "sensision", "the output global format of noderig")
 	RootCmd.Flags().String("separator", ".", "the class separator string")
 
 	err := viper.BindPFlags(RootCmd.PersistentFlags())
@@ -51,18 +51,6 @@ func init() {
 	if err != nil {
 		log.WithError(err).Fatal("failed to init command line")
 	}
-
-	viper.WatchConfig()
-
-	viper.OnConfigChange(func(e fsnotify.Event) {
-		log.Info("Config file changed, reload...")
-
-		csMutex.Lock()
-		defer csMutex.Unlock()
-		cs = getCollectors()
-
-		log.Infof("Reloaded - %d", len(cs))
-	})
 }
 
 // Load config - initialize defaults and read config.
@@ -107,7 +95,7 @@ func initConfig() {
 	if viper.IsSet("format") {
 		format := viper.GetString("format")
 
-		if format != "sensition" {
+		if format != "sensision" {
 			core.Format = format
 		}
 	}
@@ -134,6 +122,17 @@ func initConfig() {
 			core.DefaultLabels = strings.Join(labelsSplices, ",")
 		}
 	}
+
+	viper.WatchConfig()
+	viper.OnConfigChange(func(e fsnotify.Event) {
+		log.Info("Config file changed, reload...")
+
+		csMutex.Lock()
+		defer csMutex.Unlock()
+		cs = getCollectors()
+
+		log.Infof("Reloaded - %d", len(cs))
+	})
 }
 
 // RootCmd launch the aggregator agent.
