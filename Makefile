@@ -1,76 +1,76 @@
-BUILD_DIR=build
+NAME				 := noderig
+BUILD_DIR  	 := build
+GITHASH			 := $(shell git rev-parse HEAD)
 
-CC=go build
-GITHASH=$(shell git rev-parse HEAD)
-DFLAGS=-race
-CFLAGS=-X github.com/ovh/noderig/cmd.githash=$(GITHASH)
-CROSS=GOOS=linux GOARCH=amd64
+CC					 := GO111MODULE=on go build
+CROSS				 := GOOS=linux GOARCH=amd64
+DFLAGS			 := -race
+CFLAGS			 := -i -v -mod vendor
+LDFLAGS			 := -X github.com/ovh/noderig/cmd.githash=$(GITHASH)
 
-rwildcard=$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst *,%,$2),$d))
-VPATH= $(BUILD_DIR)
+rwildcard		 := $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst *,%,$2),$d))
 
-LINT_PATHS= ./cmd/... ./collectors/... ./core/... ./
+FORMAT_PATHS := ./cmd ./core ./collectors $(NAME).go
+MODULE_PATHS := ./cmd/... ./core/... ./collectors/...
+FILE_PATHS	 := $(call rwildcard, cmd, *.go) $(call rwildcard, core, *.go) $(NAME).go
 
-.SECONDEXPANSION:
+.PHONY: all
+all: init dep format lint release
 
-install: 
-	curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v1.16.0
+.PHONY: init
+init:
+	GO111MODULE=on go get -u -v github.com/golangci/golangci-lint/cmd/golangci-lint
 
-init: 
-	dep init
+.PHONY: dep
+dep:
+	GO111MODULE=on go mod vendor -v
 
-deps:
-	dep ensure -v
-
-build: noderig.go $$(call rwildcard, ./cmd, *.go) $$(call rwildcard, ./collectors, *.go)
-	$(CC) $(DFLAGS) -ldflags "$(CFLAGS)" -o $(BUILD_DIR)/noderig noderig.go
-
-.PHONY: release
-release: noderig.go $$(call rwildcard, ./cmd, *.go) $$(call rwildcard, ./collectors, *.go)
-	$(CC) -ldflags "$(CFLAGS)" -o $(BUILD_DIR)/noderig noderig.go
-
-.PHONY: dist
-dist: noderig.go $$(call rwildcard, ./cmd, *.go) $$(call rwildcard, ./collectors, *.go)
-	$(CROSS) $(CC) -ldflags "$(CFLAGS) -s -w" -o $(BUILD_DIR)/noderig noderig.go
+.PHONY:	fmt
+format: $(FILE_PATHS)
+	gofmt -s -w $(FORMAT_PATHS)
 
 .PHONY: lint
-lint:
-	$(GOPATH)/bin/golangci-lint run --enable-all \
-		--disable gochecknoinits \
-		--disable gochecknoglobals \
-		--disable scopelint \
-		--disable goimports \
-		$(LINT_PATHS)
+lint: $(FILE_PATHS)
+	golangci-lint run
 
-.PHONY: format
-format:
-	gofmt -w -s ./cmd ./core ./collectors noderig.go
+.PHONY: build
+build: $(FILE_PATHS)
+	$(CC) $(CFLAGS) $(DFLAGS) -ldflags '$(LDFLAGS)' -o $(BUILD_DIR)/$(NAME)
 
 .PHONY: dev
-dev: format lint build
+dev: fmt lint build
+
+.PHONY: release
+release: $(FILE_PATHS)
+	$(CC) $(CFLAGS) -ldflags '$(LDFLAGS) -s -w' -o $(BUILD_DIR)/$(NAME)
+
+.PHONY: dist
+dist: $(FILE_PATHS)
+	$(CROSS) $(CC) $(CFLAGS) -ldflags '$(LDFLAGS) -s -w' -o $(BUILD_DIR)/$(NAME)
 
 .PHONY: clean
 clean:
-	rm -rf $BUILD_DIR
+	rm -rfv $(BUILD_DIR)
+	rm -rfv vendor
 
 # Docker build
 
+.PHONY: build-docker
 build-docker: build-go-in-docker build-docker-image
 
-go-build-in-docker:
-	$(CC) -ldflags "$(CFLAGS)" noderig.go
-
+.PHONY: build-go-in-docker
 build-go-in-docker:
 	docker run --rm \
 		-e GOBIN=/go/bin/ -e CGO_ENABLED=0 -e GOPATH=/go \
 		-v ${PWD}:/go/src/github.com/ovh/noderig \
 		-w /go/src/github.com/ovh/noderig \
-		golang:1.8.0 \
-			make glide-install go-build-in-docker
+		golang:1.12.6 \
+			make
 
+.PHONY: build-docker-image
 build-docker-image:
 	docker build -t ovh/noderig .
 
+.PHONY: run
 run:
 	docker run --rm --net host ovh/noderig

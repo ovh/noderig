@@ -10,7 +10,7 @@ import (
 var (
 
 	// Format is the collector ouptut format for Noderig
-	Format = "sensition"
+	Format = "sensision"
 
 	// Separator pattern for each classnames
 	Separator = "."
@@ -48,16 +48,16 @@ func GetSeriesOutputAttributes(tick int64, class string, labels string, attribut
 	}
 
 	switch Format {
-	case "sensition":
-		return toSensitionFormat(tick, class, labels, attributes, value)
+	case "sensision":
+		return toSensisionFormat(tick, class, labels, attributes, value)
 	case "prometheus":
 		return toPrometheusFormat(tick, class, labels, value)
 	default:
-		return toSensitionFormat(tick, class, labels, attributes, value)
+		return toSensisionFormat(tick, class, labels, attributes, value)
 	}
 }
 
-func toSensitionFormat(tick int64, class string, labels string, attributes string, value interface{}) string {
+func toSensisionFormat(tick int64, class string, labels string, attributes string, value interface{}) string {
 	gtsValue := ""
 	switch v := value.(type) {
 	case string:
@@ -87,7 +87,7 @@ func toPrometheusFormat(tick int64, class string, labels string, value interface
 func ToLabels(key string, value interface{}) string {
 
 	switch Format {
-	case "sensition":
+	case "sensision":
 		return fmt.Sprintf("%v=%v", key, value)
 	case "prometheus":
 		return fmt.Sprintf("%v=\"%v\"", key, value)
