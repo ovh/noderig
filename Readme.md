@@ -130,7 +130,7 @@ For example to define a script shell collectors reach the noderig collectors fil
 ```sh
 cd ~/collectors
 mkdir 10
-``
+```
 
 Then inside the 10 folder write the following executable `test.sh` shell script.
 
