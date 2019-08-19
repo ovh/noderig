@@ -74,6 +74,7 @@ func (c *CPU) scrape() error {
 	iowaits := make([]float64, len(times))
 	nices := make([]float64, len(times))
 	irqs := make([]float64, len(times))
+	steals := make([]float64, len(times))
 	for i, t := range times {
 		dt := t.Total() - c.times[i].Total()
 		idles[i] = (t.Idle - c.times[i].Idle) / dt
@@ -82,6 +83,7 @@ func (c *CPU) scrape() error {
 		iowaits[i] = (t.Iowait - c.times[i].Iowait) / dt
 		nices[i] = (t.Nice - c.times[i].Nice) / dt
 		irqs[i] = (t.Irq - c.times[i].Irq) / dt
+		steals[i] = (t.Steal - c.times[i].Steal) / dt
 	}
 
 	global := 0.0
@@ -145,6 +147,14 @@ func (c *CPU) scrape() error {
 		irq = irq / float64(len(irqs)) * 100
 		gts = core.GetSeriesOutput(now, class+".irq", "{}", irq)
 		c.sensision.WriteString(gts)
+
+		steal := 0.0
+		for _, v := range steals {
+			steal += v
+		}
+		steal = steal / float64(len(steals)) * 100
+		gts = core.GetSeriesOutput(now, class+".steal", "{}", steal)
+		c.sensision.WriteString(gts)
 	}
 
 	if c.level == 3 {
@@ -175,6 +185,12 @@ func (c *CPU) scrape() error {
 
 		for i, v := range irqs {
 			gts := core.GetSeriesOutput(now, fmt.Sprintf("%v.irq", class),
+				fmt.Sprintf("{%v}", core.ToLabels("chore", i)), v*100)
+			c.sensision.WriteString(gts)
+		}
+
+		for i, v := range steals {
+			gts := core.GetSeriesOutput(now, fmt.Sprintf("%v.steal", class),
 				fmt.Sprintf("{%v}", core.ToLabels("chore", i)), v*100)
 			c.sensision.WriteString(gts)
 		}
