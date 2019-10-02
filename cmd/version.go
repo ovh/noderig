@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	version = "2.5.3"
+	version = "2.5.4"
 	githash = "HEAD"
 )
 

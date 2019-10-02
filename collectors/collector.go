@@ -113,7 +113,8 @@ func (c *Collector) scrape() (cmdError error) {
 		ew.Close()
 	}()
 
-	tagPattern := regexp.MustCompile(`^[a-zA-Z0-9-%_\.\/]*$`)
+	tagKeyPattern := regexp.MustCompile(`^[a-zA-Z0-9-%_\.\/]*$`)
+	tagValuePattern := regexp.MustCompile(`^[a-zA-Z0-9-%_@\.\/]*$`)
 
 	// Stderr handler
 	go func() {
@@ -178,7 +179,7 @@ func (c *Collector) scrape() (cmdError error) {
 				if len(sp) != 2 {
 					break
 				}
-				if !tagPattern.MatchString(sp[0]) || !tagPattern.MatchString(sp[1]) {
+				if !tagKeyPattern.MatchString(sp[0]) || !tagValuePattern.MatchString(sp[1]) {
 					break
 				}
 				dp.Tags[c.sanitize(sp[0])] = c.sanitize(sp[1])
