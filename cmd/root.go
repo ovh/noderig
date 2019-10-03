@@ -139,26 +139,30 @@ func initConfig() {
 var RootCmd = &cobra.Command{
 	Use:   "noderig",
 	Short: "Noderig expose node stats as Sensision metrics",
-	Run: func(cmd *cobra.Command, args []string) {
-		log.Info("Noderig starting")
+	Run:   rootFn,
+}
 
-		cs = getCollectors()
+func rootFn(cmd *cobra.Command, args []string) {
+	log.Info("Noderig starting")
+	log.Infof("External collectors will be loaded from: '%s'", viper.GetString("collectors"))
 
-		log.Infof("Noderig started - %v", len(cs))
+	cs = getCollectors()
 
-		// Setup http
-		http.Handle("/metrics", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			csMutex.Lock()
-			defer csMutex.Unlock()
-			for _, c := range cs {
-				_, err := w.Write(c.Metrics().Bytes())
-				if err != nil {
-					log.WithError(err).Error("cannot write metric into file")
-				}
+	log.Infof("Noderig started - %v", len(cs))
+
+	// Setup http
+	http.Handle("/metrics", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		csMutex.Lock()
+		defer csMutex.Unlock()
+		for _, c := range cs {
+			_, err := w.Write(c.Metrics().Bytes())
+			if err != nil {
+				log.WithError(err).Error("cannot write metric into file")
 			}
-		}))
-		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-			_, err := w.Write([]byte(`<html>
+		}
+	}))
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		_, err := w.Write([]byte(`<html>
 	             <head><title>Noderig</title></head>
 	             <body>
 	             <h1>Noderig</h1>
@@ -166,64 +170,63 @@ var RootCmd = &cobra.Command{
 	             <p><a href="https://github.com/ovh/noderig">Github</a></p>
 	             </body>
 	             </html>`))
-			if err != nil {
-				log.WithError(err).Error("cannot send body to client")
-			}
-		})
-		log.Info("Http started")
+		if err != nil {
+			log.WithError(err).Error("cannot send body to client")
+		}
+	})
+	log.Info("Http started")
 
-		if viper.IsSet("flushPath") {
-			flushPath := viper.GetString("flushPath")
-			ticker := time.NewTicker(time.Duration(viper.GetInt("flushPeriod")) * time.Millisecond)
-			go func() {
-				for range ticker.C {
-					path := fmt.Sprintf("%v%v", flushPath, time.Now().Unix())
-					log.Debugf("Flush to file: %v%v", path, ".tmp")
-					file, err := os.Create(path + ".tmp")
+	if viper.IsSet("flushPath") {
+		flushPath := viper.GetString("flushPath")
+		ticker := time.NewTicker(time.Duration(viper.GetInt("flushPeriod")) * time.Millisecond)
+		go func() {
+			for range ticker.C {
+				path := fmt.Sprintf("%v%v", flushPath, time.Now().Unix())
+				log.Debugf("Flush to file: %v%v", path, ".tmp")
+				file, err := os.Create(path + ".tmp")
+				if err != nil {
+					log.Errorf("Flush failed: %v", err)
+				}
+
+				csMutex.Lock()
+				for _, c := range cs {
+					_, err := file.Write(c.Metrics().Bytes())
 					if err != nil {
-						log.Errorf("Flush failed: %v", err)
-					}
-
-					csMutex.Lock()
-					for _, c := range cs {
-						_, err := file.Write(c.Metrics().Bytes())
-						if err != nil {
-							log.WithError(err).Error("Cannot write metric into file")
-						}
-					}
-					csMutex.Unlock()
-
-					if err := file.Close(); err != nil {
-						log.WithError(err).Error("Cannot close flush file")
-					}
-
-					// Move tmp file to metrics one
-					log.Debugf("Move to file: %v%v", path, ".metrics")
-					err = os.Rename(path+".tmp", path+".metrics")
-					if err != nil {
-						log.WithError(err).Error("Cannot rotate metrics file")
+						log.WithError(err).Error("Cannot write metric into file")
 					}
 				}
-			}()
-			log.Info("Flush routine started")
-		}
+				csMutex.Unlock()
 
-		log.Info("Started")
+				if err := file.Close(); err != nil {
+					log.WithError(err).Error("Cannot close flush file")
+				}
 
-		if viper.GetString("listen") != "none" {
-			log.Infof("Listen %s", viper.GetString("listen"))
-			log.Fatal(http.ListenAndServe(viper.GetString("listen"), nil))
-		} else {
+				// Move tmp file to metrics one
+				log.Debugf("Move to file: %v%v", path, ".metrics")
+				err = os.Rename(path+".tmp", path+".metrics")
+				if err != nil {
+					log.WithError(err).Error("Cannot rotate metrics file")
+				}
+			}
+		}()
+		log.Info("Flush routine started")
+	}
 
-			quit := make(chan os.Signal, 2)
+	log.Info("Started")
 
-			signal.Notify(quit, syscall.SIGTERM)
-			signal.Notify(quit, syscall.SIGINT)
+	if viper.GetString("listen") != "none" {
+		log.Infof("Listen %s", viper.GetString("listen"))
+		log.Fatal(http.ListenAndServe(viper.GetString("listen"), nil))
+	} else {
 
-			<-quit
+		quit := make(chan os.Signal, 2)
 
-		}
-	},
+		signal.Notify(quit, syscall.SIGTERM)
+		signal.Notify(quit, syscall.SIGINT)
+
+		<-quit
+
+	}
 }
 
 func getCollectors() []core.Collector {
