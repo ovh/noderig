@@ -1,5 +1,7 @@
 github.com/StackExchange/wmi v0.0.0-20180116203802-5d049714c4a6 h1:fLjPD/aNc3UIOA6tDi6QXUemppXK3P9BI7mr2hd6gx8=
 github.com/StackExchange/wmi v0.0.0-20180116203802-5d049714c4a6/go.mod h1:3eOhrUMpNV+6aFIbp5/iudMxNCF27Vw2OZgy4xEx0Fg=
+github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
+github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/fsnotify/fsnotify v0.0.0-20161026203122-fd9ec7deca8b h1:XoaGspJy8QzJDAjAGLOfTs7QgRduvv0O4XaD8P67BKE=
 github.com/fsnotify/fsnotify v0.0.0-20161026203122-fd9ec7deca8b/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
 github.com/go-ole/go-ole v0.0.0-20180213002836-a1ec82a652eb h1:LI4I0crHWpdCzhms+Vthv6cVfZWnQ+oOtnJhK6LsjNc=
@@ -16,6 +18,8 @@ github.com/pelletier/go-buffruneio v0.1.0 h1:ig6N9Cg71k/P+UUbhwdOFtJWz+qa8/3by7A
 github.com/pelletier/go-buffruneio v0.1.0/go.mod h1:JkE26KsDizTr40EUHkXVtNPvgGtbSNq5BcowyYOWdKo=
 github.com/pelletier/go-toml v0.0.0-20161203113216-ce7be745f09f h1:H3wovvceBI8u2Fd/tf6fiQkJkkKRF6YRG0Rzx3jxbKY=
 github.com/pelletier/go-toml v0.0.0-20161203113216-ce7be745f09f/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/94hg7ilaic=
+github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
+github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/shirou/gopsutil v0.0.0-20180130011338-c432be29ccce h1:cFtcQ+FX7NWHFEGTIo7Wgu95Elt4qS+4ymVz/h5zHiY=
 github.com/shirou/gopsutil v0.0.0-20180130011338-c432be29ccce/go.mod h1:5b4v6he4MtMOwMlS0TUMTu2PcXUg8+E1lC7eC3UO/RA=
 github.com/shirou/gopsutil v2.18.12+incompatible h1:1eaJvGomDnH74/5cF4CTmTbLHAriGFsTZppLXDX93OM=
@@ -36,11 +40,17 @@ github.com/spf13/pflag v0.0.0-20161024131444-5ccb023bc27d h1:cpV+7T5E6SXMwGmiItJ
 github.com/spf13/pflag v0.0.0-20161024131444-5ccb023bc27d/go.mod h1:DYY7MBk1bdzusC3SYhjObp+wFpr4gzcvqqNjLnInEg4=
 github.com/spf13/viper v0.0.0-20161213093849-5ed0fc31f7f4 h1:bNX/r+R6eIb/3FXQda95HfnWbNL3B+h7tBVtoI8xSpc=
 github.com/spf13/viper v0.0.0-20161213093849-5ed0fc31f7f4/go.mod h1:A8kyI5cUJhb8N+3pkfONlcEcZbueH6nhAm0Fq7SrnBM=
+github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
+github.com/stretchr/testify v1.4.0 h1:2E4SXV/wtOkTonXsotYi4li6zVWxYlZuYNCXe9XRJyk=
+github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=
 golang.org/x/sys v0.0.0-20161205170828-478fcf54317e h1:v82VXBBtFjP6ibmPcHb+KsdiDGCUlREprZ6OL0Yrivo=
 golang.org/x/sys v0.0.0-20161205170828-478fcf54317e/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/sys v0.0.0-20190626221950-04f50cda93cb h1:fgwFCsaw9buMuxNd6+DQfAuSFqbNiQZpcgJQAgJsK6k=
 golang.org/x/sys v0.0.0-20190626221950-04f50cda93cb/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/text v0.0.0-20161209224335-47a200a05c8b h1:DiO91brXaroqq0YTFJX1rO+eh1xcNSxIT/gVtyBkgSw=
 golang.org/x/text v0.0.0-20161209224335-47a200a05c8b/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
+gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/yaml.v2 v2.0.0-20160928153709-a5b47d31c556 h1:hKXbLW5oaJoQgs8KrzTLdF4PoHi+0oQPgea9TNtvE3E=
 gopkg.in/yaml.v2 v2.0.0-20160928153709-a5b47d31c556/go.mod h1:JAlM8MvJe8wmxCU4Bli9HhUf9+ttbYbLASfIpnQbh74=
+gopkg.in/yaml.v2 v2.2.2 h1:ZCJp+EgiOT7lHqUV2J862kp8Qj64Jo6az82+3Td9dZw=
+gopkg.in/yaml.v2 v2.2.2/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
