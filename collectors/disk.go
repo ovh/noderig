@@ -18,20 +18,20 @@ type Disk struct {
 	sensision    bytes.Buffer
 	level        uint8
 	period       uint
-	allowedDisks map[string]struct{}
+	allowedDisks []string
 }
 
 // NewDisk returns an initialized Disk collector.
 func NewDisk(period uint, level uint8, opts interface{}) *Disk {
 
-	allowedDisks := map[string]struct{}{}
+	var allowedDisks []string
 	if opts != nil {
 		if options, ok := opts.(map[string]interface{}); ok {
 			if val, ok := options["names"]; ok {
 				if diskNames, ok := val.([]interface{}); ok {
 					for _, v := range diskNames {
 						if diskName, ok := v.(string); ok {
-							allowedDisks[diskName] = struct{}{}
+							allowedDisks = append(allowedDisks, diskName)
 						}
 					}
 				}
@@ -104,7 +104,7 @@ func (c *Disk) scrape() error {
 	for diskPath, usage := range dev {
 		if len(c.allowedDisks) > 0 {
 			_, diskName := path.Split(diskPath) // return "sda1" from "/dev/sda1"
-			if _, allowed := c.allowedDisks[diskName]; !allowed {
+			if !stringInSlice(diskName, c.allowedDisks) {
 				log.Debug("Disk " + diskPath + " is blacklisted, skip it")
 				continue
 			}
@@ -119,7 +119,7 @@ func (c *Disk) scrape() error {
 		for diskPath, usage := range dev {
 			if len(c.allowedDisks) > 0 {
 				_, diskName := path.Split(diskPath) // return "sda1" from "/dev/sda1"
-				if _, allowed := c.allowedDisks[diskName]; !allowed {
+				if !stringInSlice(diskName, c.allowedDisks) {
 					log.Debug("Disk " + diskPath + " is blacklisted, skip it")
 					continue
 				}
@@ -146,7 +146,7 @@ func (c *Disk) scrape() error {
 	if c.level > 2 {
 		for name, stats := range counters {
 			if len(c.allowedDisks) > 0 {
-				if _, allowed := c.allowedDisks[name]; !allowed {
+				if !stringInSlice(name, c.allowedDisks) {
 					log.Debug("Disk name " + name + " is blacklisted, skip it")
 					continue
 				}

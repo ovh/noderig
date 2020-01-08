@@ -225,6 +225,14 @@ disk-opts:
     - sda3
 ```
 
+Disk-opts, names field support now regular expression to white-list disks names based on [golang MatchString](https://golang.org/pkg/regexp/#MatchString) implementation. However to use a regular expression you need to prefix the string value by a `~`. To whitelist all disk names, you can set:
+
+```yaml
+disk-opts:
+  names:            # Give a filtering list of disks names for which you want metrics
+    - ~disk*
+```
+
 #### Parameters
 
 Noderig can be customized through some parameters.
