@@ -77,6 +77,9 @@ Noderig have some built-in collectors.
 <tr><td>os.mem.total{}</td><td>total memory (bytes)</td></tr>
 <tr><td>os.swap.used{}</td><td>used swap (bytes)</td></tr>
 <tr><td>os.swap.total{}</td><td>total swap (bytes)</td></tr>
+<tr><td rowspan="3">3</td><td>os.mem.free{}</td><td>free memory (bytes)</td></tr>
+<tr><td>os.mem.buffers{}</td><td>buffers memory (bytes)</td></tr>
+<tr><td>os.mem.cached{}</td><td>cached memory (bytes)</td></tr>
 </table>
 
 ### Load
