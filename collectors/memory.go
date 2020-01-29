@@ -88,6 +88,14 @@ func (c *Memory) scrape() error {
 		gts = core.GetSeriesOutput(now, swapClass+".total", "{}", swap.Total)
 		c.sensision.WriteString(gts)
 	}
+	if c.level > 2 {
+		gts := core.GetSeriesOutput(now, memClass+".free", "{}", virt.Free)
+		c.sensision.WriteString(gts)
+		gts = core.GetSeriesOutput(now, memClass+".buffers", "{}", virt.Buffers)
+		c.sensision.WriteString(gts)
+		gts = core.GetSeriesOutput(now, memClass+".cached", "{}", virt.Cached)
+		c.sensision.WriteString(gts)
+	}
 
 	return nil
 }
