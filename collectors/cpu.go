@@ -155,6 +155,14 @@ func (c *CPU) scrape() error {
 		steal = steal / float64(len(steals)) * 100
 		gts = core.GetSeriesOutput(now, class+".steal", "{}", steal)
 		c.sensision.WriteString(gts)
+
+		idle := 0.0
+		for _, v := range idles {
+			idle += v
+		}
+		idle = idle / float64(len(idles)) * 100
+		gts = core.GetSeriesOutput(now, class+".idle", "{}", idle)
+		c.sensision.WriteString(gts)
 	}
 
 	if c.level == 3 {
@@ -191,6 +199,12 @@ func (c *CPU) scrape() error {
 
 		for i, v := range steals {
 			gts := core.GetSeriesOutput(now, fmt.Sprintf("%v.steal", class),
+				fmt.Sprintf("{%v}", core.ToLabels("chore", i)), v*100)
+			c.sensision.WriteString(gts)
+		}
+
+		for i, v := range idles {
+			gts := core.GetSeriesOutput(now, fmt.Sprintf("%v.idle", class),
 				fmt.Sprintf("{%v}", core.ToLabels("chore", i)), v*100)
 			c.sensision.WriteString(gts)
 		}
