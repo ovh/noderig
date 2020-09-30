@@ -150,6 +150,10 @@ func rootFn(cmd *cobra.Command, args []string) {
 
 	log.Infof("Noderig started - %v", len(cs))
 
+	for _, k := range viper.AllKeys() {
+		log.Debugf("Configuration %s = %+v", k, viper.Get(k))
+	}
+
 	// Setup http
 	http.Handle("/metrics", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		csMutex.Lock()
