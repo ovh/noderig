@@ -36,10 +36,11 @@ func NewNet(period uint, level uint8, opts interface{}) *Net {
 							ifaces = append(ifaces, s)
 						}
 					}
+				} else if ifs, ok := val.([]string); ok {
+					ifaces = append(ifaces, ifs...)
 				}
 			}
 		}
-
 	}
 
 	c := &Net{
