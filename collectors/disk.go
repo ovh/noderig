@@ -34,6 +34,8 @@ func NewDisk(period uint, level uint8, opts interface{}) *Disk {
 							allowedDisks = append(allowedDisks, diskName)
 						}
 					}
+				} else if diskNames, ok := val.([]string); ok {
+					allowedDisks = append(allowedDisks, diskNames...)
 				}
 			}
 		}

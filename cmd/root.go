@@ -37,6 +37,8 @@ func init() {
 	RootCmd.Flags().Uint8("mem", 1, "memory metrics level")
 	RootCmd.Flags().Uint8("disk", 1, "disk metrics level")
 	RootCmd.Flags().Uint8("net", 1, "network metrics level")
+	RootCmd.Flags().StringSlice("net-opts.interfaces", make([]string, 0), "give a filtering list of network interfaces to collect metrics on")
+	RootCmd.Flags().StringSlice("disk-opts.names", make([]string, 0), "give a filtering list of disks names to collect metrics on")
 	RootCmd.Flags().Uint64("period", 1000, "default collection period")
 	RootCmd.Flags().StringP("collectors", "c", "./collectors", "external collectors directory")
 	RootCmd.Flags().Uint64P("keep-for", "k", 3, "keep collectors data for the given number of fetch")
@@ -142,9 +144,25 @@ var RootCmd = &cobra.Command{
 	Run:   rootFn,
 }
 
+func setFlagToViperMap(viperMap, flag, mapkey string) {
+	if viper.Get(viperMap) == nil && viper.Get(flag) != nil {
+		viper.Set(viperMap, map[string]interface{}{mapkey: viper.GetStringSlice(flag)})
+	} else {
+		if options, ok := viper.Get(viperMap).(map[string]interface{}); ok {
+			if viper.Get(flag) != nil && options[mapkey] == nil {
+				options[mapkey] = viper.GetStringSlice(flag)
+				viper.Set(viperMap, options)
+			}
+		}
+	}
+}
+
 func rootFn(cmd *cobra.Command, args []string) {
 	log.Info("Noderig starting")
 	log.Infof("External collectors will be loaded from: '%s'", viper.GetString("collectors"))
+
+	setFlagToViperMap("net-opts", "net-opts.interfaces", "interfaces")
+	setFlagToViperMap("disk-opts", "disk-opts.names", "names")
 
 	cs = getCollectors()
 
