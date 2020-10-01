@@ -31,17 +31,19 @@ Noderig is pretty easy to build.
 noderig [flags]
 
 Flags:
-      --config string     config file to use
-  -l  --listen string     listen address (default "127.0.0.1:9100")
-  -v  --verbose           verbose output
-      --period uint       default collection period (default 1000)
-      --cpu uint8         cpu metrics level (default 1)
-      --disk uint8        disk metrics level (default 1)
-      --mem uint8         memory metrics level (default 1)
-      --net uint8         network metrics level (default 1)
-      --load uint8        load metrics level (default 1)
-  -c  --collectors string external collectors directory (default "./collectors")
-  -k  --keep-for uint     keep collectors data for the given number of fetch (default 3)
+      --config string       config file to use
+  -l  --listen string       listen address (default "127.0.0.1:9100")
+  -v  --verbose             verbose output
+      --period uint         default collection period (default 1000)
+      --cpu uint8           cpu metrics level (default 1)
+      --disk uint8          disk metrics level (default 1)
+      --mem uint8           memory metrics level (default 1)
+      --net uint8           network metrics level (default 1)
+      --load uint8          load metrics level (default 1)
+  -c  --collectors string   external collectors directory (default "./collectors")
+  -k  --keep-for uint       keep collectors data for the given number of fetch (default 3)
+      --net-opts.interfaces give a filtering list of network interfaces to collect metrics on
+      --disk-opts.names     give a filtering list of disks names to collect metrics on
 ```
 
 ## Collectors
