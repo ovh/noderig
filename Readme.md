@@ -14,7 +14,7 @@ Noderig metrics:
 
 ## Status
 
-Noderig is currently under development. Feel free to comment or contribute!
+Noderig is not under development. We are moving toward [node_exporter](https://github.com/prometheus/node_exporter)
 
 ## Building
 
